@@ -35,6 +35,7 @@ export default function EmailCard({ email, isSelected, onClick }: EmailCardProps
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics/stats"] });
       toast({
         title: "Response Generated",
         description: "AI response has been generated successfully",

@@ -18,15 +18,18 @@ export function useEmails(options: UseEmailsOptions = {}) {
   searchParams.append("limit", limit.toString());
   searchParams.append("offset", offset.toString());
 
+  const queryString = searchParams.toString();
+  const url = queryString ? `/api/emails?${queryString}` : "/api/emails";
+
   return useQuery({
-    queryKey: ["/api/emails", searchParams.toString()],
+    queryKey: [url],
     staleTime: 30000, // 30 seconds
   });
 }
 
 export function useEmail(emailId: string | undefined) {
   return useQuery({
-    queryKey: ["/api/emails", emailId],
+    queryKey: [`/api/emails/${emailId}`],
     enabled: !!emailId,
   });
 }

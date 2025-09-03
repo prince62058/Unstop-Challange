@@ -44,7 +44,7 @@ export default function AIResponsePanel({ selectedEmail, onResponseSent }: AIRes
     data: emailDetails, 
     isLoading: emailLoading 
   } = useQuery({
-    queryKey: ["/api/emails", selectedEmail?.id],
+    queryKey: [`/api/emails/${selectedEmail?.id}`],
     enabled: !!selectedEmail?.id,
   }) as { data: EmailWithResponses | undefined; isLoading: boolean };
 
@@ -55,7 +55,8 @@ export default function AIResponsePanel({ selectedEmail, onResponseSent }: AIRes
     },
     onSuccess: (data) => {
       setEditedResponse(data.response);
-      queryClient.invalidateQueries({ queryKey: ["/api/emails", selectedEmail?.id] });
+      queryClient.invalidateQueries({ queryKey: [`/api/emails/${selectedEmail?.id}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
       toast({
         title: "Response Generated",
         description: "AI response has been generated successfully",
@@ -77,6 +78,7 @@ export default function AIResponsePanel({ selectedEmail, onResponseSent }: AIRes
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics/stats"] });
       onResponseSent();
       toast({
         title: "Response Sent",
