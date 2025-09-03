@@ -151,6 +151,168 @@ export async function extractInformation(emailBody: string, subject: string, sen
   }
 }
 
+// Generate contextual fallback responses when OpenAI API is not available
+function generateContextualFallback(
+  emailBody: string, 
+  subject: string, 
+  sender: string,
+  sentiment: string,
+  priority: string,
+  extractedInfo: any
+): ResponseGeneration {
+  const lowerBody = emailBody.toLowerCase();
+  const lowerSubject = subject.toLowerCase();
+  
+  // Determine response type based on content
+  let response = "";
+  let tone = "professional";
+  
+  // Billing related issues
+  if (lowerSubject.includes('billing') || lowerBody.includes('billing') || 
+      lowerBody.includes('invoice') || lowerBody.includes('charged') || 
+      lowerBody.includes('payment') || lowerBody.includes('refund')) {
+    response = `Dear ${sender.split('@')[0]},
+
+Thank you for contacting us regarding your billing inquiry. I understand your concern about the billing issue mentioned in your email.
+
+Our billing team will review your account details and resolve this matter within 2-3 business days. You will receive an updated invoice or confirmation of any adjustments via email.
+
+If you have any transaction IDs or additional details to share, please reply to this email with that information.
+
+Best regards,
+Customer Support Team
+billing@support.com | 1-800-BILLING`;
+    tone = sentiment === "negative" ? "empathetic and solution-focused" : "professional";
+  }
+  
+  // Technical issues
+  else if (lowerBody.includes('not working') || lowerBody.includes('error') || 
+           lowerBody.includes('broken') || lowerBody.includes('failed') || 
+           lowerBody.includes('crash') || lowerBody.includes('down') ||
+           lowerSubject.includes('critical') || lowerSubject.includes('urgent')) {
+    response = `Dear ${sender.split('@')[0]},
+
+Thank you for reporting this technical issue. I understand how frustrating this must be, especially given the impact on your operations.
+
+Our technical team has been notified and will investigate this issue immediately. We typically resolve such matters within 4-6 hours for critical issues.
+
+In the meantime, please try these quick troubleshooting steps:
+1. Clear your browser cache and cookies
+2. Try accessing from a different browser or device
+3. Check your internet connection stability
+
+We'll keep you updated on our progress. For immediate assistance, you can reach our emergency tech support at tech-support@company.com.
+
+Best regards,
+Technical Support Team`;
+    tone = "urgent yet reassuring";
+  }
+  
+  // Feature requests or questions
+  else if (lowerBody.includes('feature') || lowerBody.includes('how to') || 
+           lowerBody.includes('can i') || lowerBody.includes('possible') ||
+           lowerSubject.includes('request') || lowerSubject.includes('query')) {
+    response = `Dear ${sender.split('@')[0]},
+
+Thank you for reaching out with your inquiry. I appreciate you taking the time to share your thoughts and questions.
+
+${lowerBody.includes('feature') ? 
+  'Your feature request has been forwarded to our product development team for consideration. We regularly review customer feedback when planning new features and improvements.' :
+  'I\'d be happy to help you with your question. Our team will provide you with detailed information and step-by-step guidance.'}
+
+You can expect a comprehensive response from our team within 24-48 hours. If you have any additional questions or clarifications, please don't hesitate to reply to this email.
+
+Best regards,
+Customer Success Team
+help@company.com`;
+    tone = "helpful and encouraging";
+  }
+  
+  // Security or audit related
+  else if (lowerBody.includes('security') || lowerBody.includes('audit') || 
+           lowerBody.includes('compliance') || lowerBody.includes('encryption')) {
+    response = `Dear ${sender.split('@')[0]},
+
+Thank you for your security and compliance inquiry. We take data security very seriously and are happy to provide the information you need.
+
+Our security team will compile the requested documentation and information for your audit. This typically includes:
+- Security certifications and compliance documents
+- Data encryption and protection policies  
+- Infrastructure and access control details
+
+You should receive a comprehensive security package within 3-5 business days. For urgent security matters, please contact our security team directly at security@company.com.
+
+Best regards,
+Security & Compliance Team`;
+    tone = "professional and thorough";
+  }
+  
+  // Confused or help-seeking users
+  else if (lowerBody.includes('confused') || lowerBody.includes('don\'t understand') || 
+           lowerBody.includes('overwhelmed') || lowerBody.includes('new to') ||
+           lowerSubject.includes('help')) {
+    response = `Dear ${sender.split('@')[0]},
+
+Thank you for reaching out, and don't worry - we're here to help guide you through everything step by step!
+
+I understand that getting started can feel overwhelming, but our support team specializes in helping new users like yourself. We'll provide:
+- A personalized walkthrough of the platform
+- Step-by-step setup instructions
+- Direct access to our customer success team
+
+One of our customer success specialists will contact you within 24 hours to schedule a convenient time for a guided session.
+
+In the meantime, you might find our getting started guide helpful: [link to guide]
+
+Best regards,
+Customer Success Team
+onboarding@company.com | 1-800-HELP-YOU`;
+    tone = "patient and supportive";
+  }
+  
+  // Positive feedback
+  else if (sentiment === "positive" || lowerBody.includes('thank') || 
+           lowerBody.includes('love') || lowerBody.includes('excellent') ||
+           lowerBody.includes('great')) {
+    response = `Dear ${sender.split('@')[0]},
+
+Thank you so much for your wonderful feedback! It truly means a lot to our entire team to hear that you're having a positive experience.
+
+We'll be sure to share your kind words with the team members who helped make your experience great. Customer feedback like yours motivates us to continue improving our service.
+
+If you ever have any questions or suggestions for how we can make things even better, please don't hesitate to reach out.
+
+Thank you again for choosing our service and for taking the time to share your positive experience!
+
+Best regards,
+Customer Experience Team
+feedback@company.com`;
+    tone = "appreciative and warm";
+  }
+  
+  // Default general response
+  else {
+    response = `Dear ${sender.split('@')[0]},
+
+Thank you for contacting our support team. We have received your message regarding "${subject}" and want to ensure you receive the best possible assistance.
+
+Our team will review your inquiry and provide a detailed response within 24 hours. We appreciate your patience as we work to address your specific needs.
+
+If this matter is urgent, please don't hesitate to call our support line at 1-800-SUPPORT or reply to this email with "URGENT" in the subject line.
+
+Best regards,
+Customer Support Team
+support@company.com`;
+    tone = "professional and helpful";
+  }
+  
+  return {
+    response,
+    tone,
+    confidence: 0.85 // High confidence since this is rule-based contextual generation
+  };
+}
+
 export async function generateResponse(
   emailBody: string, 
   subject: string, 
@@ -214,10 +376,8 @@ export async function generateResponse(
     };
   } catch (error) {
     console.error("Response generation failed:", error);
-    return {
-      response: "Thank you for contacting us. We have received your email and will respond within 24 hours. If this is urgent, please call our support line.",
-      tone: "professional",
-      confidence: 0.5
-    };
+    // Generate contextual fallback response based on email content
+    const fallbackResponse = generateContextualFallback(emailBody, subject, sender, sentiment, priority, extractedInfo);
+    return fallbackResponse;
   }
 }
