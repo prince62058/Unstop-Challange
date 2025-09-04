@@ -1,6 +1,8 @@
 import { useAnalytics } from "@/hooks/use-analytics";
 import StatsCards from "@/components/dashboard/stats-cards";
 import AnalyticsPanel from "@/components/dashboard/analytics-panel";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 interface AnalyticsData {
   stats?: {
@@ -27,6 +29,14 @@ export default function Analytics() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
+          <div className="flex items-center gap-3 mb-3">
+            <Link href="/">
+              <Button variant="ghost" className="flex items-center gap-2 hover:bg-accent">
+                <i className="fas fa-arrow-left"></i>
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
           <h1 className="text-3xl font-bold gradient-text mb-2">
             Analytics Dashboard
           </h1>

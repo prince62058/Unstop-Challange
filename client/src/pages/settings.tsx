@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Link } from "wouter";
 
 export default function Settings() {
   const [emailSettings, setEmailSettings] = useState({
@@ -37,6 +38,14 @@ export default function Settings() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
+          <div className="flex items-center gap-3 mb-3">
+            <Link href="/">
+              <Button variant="ghost" className="flex items-center gap-2 hover:bg-accent">
+                <i className="fas fa-arrow-left"></i>
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
           <h1 className="text-3xl font-bold gradient-text mb-2">
             Settings
           </h1>

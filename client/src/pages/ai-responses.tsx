@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useEmails } from "@/hooks/use-emails";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "wouter";
 
 interface ProcessedEmail {
   id: string;
@@ -48,6 +49,14 @@ export default function AIResponses() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
+          <div className="flex items-center gap-3 mb-3">
+            <Link href="/">
+              <Button variant="ghost" className="flex items-center gap-2 hover:bg-accent">
+                <i className="fas fa-arrow-left"></i>
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
           <h1 className="text-3xl font-bold gradient-text mb-2">
             AI Responses
           </h1>
