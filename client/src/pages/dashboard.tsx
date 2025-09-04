@@ -98,27 +98,38 @@ export default function Dashboard() {
       <main className="flex-1 overflow-auto">
         <Header onSyncEmails={handleSyncEmails} />
 
-        {/* White & Pink Hero Section */}
+        {/* Hero Section with Video */}
         <section className="px-6 pb-4">
           <div className="glass-card p-6 rounded-xl fade-in bg-gradient-to-r from-pink-50/80 to-rose-50/80 border border-pink-200/50">
-            <div className="flex items-center justify-between mobile-stack gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+              {/* Left side - Text content */}
               <div>
-                <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-gray-800 mb-3 flex items-center gap-2">
                   <i className="fas fa-chart-line text-pink-500"></i>
                   Professional Dashboard
                 </h2>
-                <p className="text-gray-600 text-sm">
+                <p className="text-gray-600 text-base mb-4">
                   AI assistant has processed <span className="font-semibold text-pink-600">{analytics?.stats?.totalEmails || 0}</span> emails 
                   and identified <span className="font-semibold text-orange-500">{analytics?.stats?.urgentEmails || 0}</span> urgent items.
                 </p>
-              </div>
-              <div className="flex items-center gap-3 mobile-full">
-                <div className="glass-card p-3 rounded-xl bg-pink-100/60 border border-pink-200/50">
-                  <i className="fas fa-trending-up text-2xl text-pink-600"></i>
+                <div className="flex items-center gap-4">
+                  <div className="glass-card p-3 rounded-xl bg-pink-100/60 border border-pink-200/50">
+                    <i className="fas fa-trending-up text-2xl text-pink-600"></i>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-pink-600">+24%</div>
+                    <div className="text-xs text-gray-500">vs last week</div>
+                  </div>
                 </div>
-                <div className="text-right mobile-hidden">
-                  <div className="text-2xl font-bold text-pink-600">+24%</div>
-                  <div className="text-xs text-gray-500">vs last week</div>
+              </div>
+              
+              {/* Right side - Video Player */}
+              <div className="flex justify-center lg:justify-end">
+                <div className="max-w-md w-full">
+                  <VideoPlayer 
+                    videoSrc="/attached_assets/Video_Ready_After_Request_1756998302074.mp4"
+                    className="rounded-xl shadow-lg"
+                  />
                 </div>
               </div>
             </div>
