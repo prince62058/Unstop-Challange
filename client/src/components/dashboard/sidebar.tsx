@@ -96,12 +96,12 @@ export default function Sidebar() {
 
       {!isCollapsed && (
         <div className="mt-6">
-          <div className="glass-card p-4 rounded-xl border border-slate-600/50 bg-gradient-to-r from-slate-800/30 to-slate-900/30">
+          <div className="glass-card p-4 rounded-xl border border-pink-200/50 bg-gradient-to-r from-pink-50/60 to-rose-50/60">
             <div className="text-center">
-              <i className="fas fa-crown text-2xl text-yellow-400 mb-2"></i>
-              <h4 className="font-semibold text-sm mb-1 text-white">Professional Plan</h4>
-              <p className="text-xs text-slate-300 mb-3">Advanced analytics & features</p>
-              <button className="btn-gradient w-full py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600">
+              <i className="fas fa-crown text-2xl text-pink-500 mb-2"></i>
+              <h4 className="font-semibold text-sm mb-1 text-gray-800">Professional Plan</h4>
+              <p className="text-xs text-gray-600 mb-3">Advanced analytics & features</p>
+              <button className="btn-gradient w-full py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-pink-500 to-pink-600">
                 Upgrade Now
               </button>
             </div>
