@@ -1,31 +1,38 @@
-import mongoose from 'mongoose';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { users, emails, emailResponses } from '../shared/schema.js';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://prince:prince123@cluster0.mongodb.net/emailManagementDB?retryWrites=true&w=majority';
+let db: ReturnType<typeof drizzle> | null = null;
 
 export const connectDB = async () => {
   try {
-    // First, try the provided MongoDB connection
-    await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
-      connectTimeoutMS: 10000,
-    });
-    console.log('Connected to MongoDB successfully');
-  } catch (error) {
-    console.error('Failed to connect to remote MongoDB, trying alternative approaches:', error);
+    const DATABASE_URL = process.env.DATABASE_URL;
     
-    // Fallback: Try without SRV if the main connection fails
-    try {
-      const fallbackUri = 'mongodb://localhost:27017/emailManagementDB';
-      console.log('Attempting to connect to local MongoDB...');
-      await mongoose.connect(fallbackUri);
-      console.log('Connected to local MongoDB successfully');
-    } catch (fallbackError) {
-      console.error('Local MongoDB also failed, using in-memory storage:', fallbackError);
-      // For development, we can continue without DB and add sample data
-      console.log('Continuing with in-memory storage for demo purposes');
+    if (!DATABASE_URL) {
+      console.error('DATABASE_URL environment variable is required');
+      throw new Error('DATABASE_URL is not configured');
     }
+
+    // Create postgres connection
+    const client = postgres(DATABASE_URL);
+    
+    // Create drizzle instance
+    db = drizzle(client);
+    
+    console.log('Connected to PostgreSQL database successfully');
+    return db;
+  } catch (error) {
+    console.error('Failed to connect to database:', error);
+    throw error;
   }
 };
 
-export default mongoose;
+export const getDB = () => {
+  if (!db) {
+    throw new Error('Database not initialized. Call connectDB() first.');
+  }
+  return db;
+};
+
+export { users, emails, emailResponses };
+export default db;

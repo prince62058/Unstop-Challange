@@ -1,8 +1,10 @@
 import { 
-  User, Email, EmailResponse,
+  users, emails, emailResponses,
   type IUser, type IEmail, type IEmailResponse,
   type InsertUser, type InsertEmail, type InsertEmailResponse
 } from "@shared/schema";
+import { getDB } from "./db.js";
+import { eq, desc, like, or, and, count, isNull, isNotNull, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -41,10 +43,12 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   private mockResponses = new Map<string, IEmailResponse>();
+
   async getUser(id: string): Promise<IUser | undefined> {
     try {
-      const user = await User.findById(id);
-      return user || undefined;
+      const db = getDB();
+      const user = await db.select().from(users).where(eq(users.id, parseInt(id))).limit(1);
+      return user[0] || undefined;
     } catch (error) {
       console.error('Error fetching user:', error);
       return undefined;
@@ -53,8 +57,9 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<IUser | undefined> {
     try {
-      const user = await User.findOne({ username });
-      return user || undefined;
+      const db = getDB();
+      const user = await db.select().from(users).where(eq(users.username, username)).limit(1);
+      return user[0] || undefined;
     } catch (error) {
       console.error('Error fetching user by username:', error);
       return undefined;
@@ -62,19 +67,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<IUser> {
-    const user = new User(insertUser);
-    return await user.save();
+    const db = getDB();
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
   }
 
   async getEmails(limit = 50, offset = 0): Promise<IEmail[]> {
     try {
-      const emails = await Email.find({})
-        .sort({ receivedAt: -1 })
+      const db = getDB();
+      const emailList = await db.select()
+        .from(emails)
+        .orderBy(desc(emails.receivedAt))
         .limit(limit)
-        .skip(offset)
-        .timeout(3000)
-        .exec();
-      return emails;
+        .offset(offset);
+      return emailList;
     } catch (error) {
       console.log('Database unavailable, returning sample data');
       return this.getSampleEmails().slice(offset, offset + limit);
@@ -83,22 +89,24 @@ export class DatabaseStorage implements IStorage {
 
   async getEmailById(id: string): Promise<IEmail | undefined> {
     try {
-      const email = await Email.findById(id).timeout(3000);
-      return email || undefined;
+      const db = getDB();
+      const email = await db.select().from(emails).where(eq(emails.id, parseInt(id))).limit(1);
+      return email[0] || undefined;
     } catch (error) {
       console.log('Database unavailable, searching sample data');
-      return this.getSampleEmails().find(email => email._id === id);
+      return this.getSampleEmails().find(email => email.id?.toString() === id);
     }
   }
 
   async createEmail(emailData: InsertEmail): Promise<IEmail> {
     try {
-      const email = new Email(emailData);
-      return await email.save();
+      const db = getDB();
+      const [email] = await db.insert(emails).values(emailData).returning();
+      return email;
     } catch (error) {
       console.log('Database unavailable, creating mock email');
       return {
-        _id: Date.now().toString(),
+        id: Date.now(),
         ...emailData,
         createdAt: new Date()
       } as IEmail;
@@ -106,11 +114,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateEmail(id: string, updates: Partial<InsertEmail>): Promise<IEmail> {
-    const updatedEmail = await Email.findByIdAndUpdate(
-      id, 
-      updates, 
-      { new: true, runValidators: true }
-    );
+    const db = getDB();
+    const [updatedEmail] = await db.update(emails)
+      .set(updates)
+      .where(eq(emails.id, parseInt(id)))
+      .returning();
     
     if (!updatedEmail) {
       throw new Error(`Email with id ${id} not found`);
@@ -120,38 +128,45 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getEmailsByPriority(priority: "urgent" | "normal"): Promise<IEmail[]> {
-    return await Email.find({ priority })
-      .sort({ receivedAt: -1 })
-      .exec();
+    const db = getDB();
+    return await db.select()
+      .from(emails)
+      .where(eq(emails.priority, priority))
+      .orderBy(desc(emails.receivedAt));
   }
 
   async getEmailsBySentiment(sentiment: "positive" | "negative" | "neutral"): Promise<IEmail[]> {
-    return await Email.find({ sentiment })
-      .sort({ receivedAt: -1 })
-      .exec();
+    const db = getDB();
+    return await db.select()
+      .from(emails)
+      .where(eq(emails.sentiment, sentiment))
+      .orderBy(desc(emails.receivedAt));
   }
 
   async searchEmails(query: string): Promise<IEmail[]> {
-    return await Email.find({
-      $or: [
-        { subject: { $regex: query, $options: 'i' } },
-        { body: { $regex: query, $options: 'i' } },
-        { sender: { $regex: query, $options: 'i' } }
-      ]
-    })
-    .sort({ receivedAt: -1 })
-    .exec();
+    const db = getDB();
+    return await db.select()
+      .from(emails)
+      .where(
+        or(
+          like(emails.subject, `%${query}%`),
+          like(emails.body, `%${query}%`),
+          like(emails.sender, `%${query}%`)
+        )
+      )
+      .orderBy(desc(emails.receivedAt));
   }
 
   async getResponsesByEmailId(emailId: string): Promise<IEmailResponse[]> {
     try {
-      return await EmailResponse.find({ emailId })
-        .sort({ createdAt: -1 })
-        .timeout(3000)
-        .exec();
+      const db = getDB();
+      const responses = await db.select()
+        .from(emailResponses)
+        .where(eq(emailResponses.emailId, parseInt(emailId)))
+        .orderBy(desc(emailResponses.createdAt));
+      return responses;
     } catch (error) {
       console.log('Database unavailable for responses, checking mock storage');
-      // Check mock responses if available
       if (this.mockResponses && this.mockResponses.has(emailId)) {
         const mockResponse = this.mockResponses.get(emailId);
         return mockResponse ? [mockResponse] : [];
@@ -162,35 +177,33 @@ export class DatabaseStorage implements IStorage {
 
   async createEmailResponse(responseData: InsertEmailResponse): Promise<IEmailResponse> {
     try {
-      const response = new EmailResponse(responseData);
-      const savedResponse = await response.save();
+      const db = getDB();
+      const [response] = await db.insert(emailResponses).values(responseData).returning();
       console.log(`Email response saved to database: ${responseData.emailId}`);
-      return savedResponse;
+      return response;
     } catch (error) {
       console.log('Database unavailable, creating mock response');
       const mockResponse = {
-        _id: Date.now().toString(),
+        id: Date.now(),
         ...responseData,
-        id: Date.now().toString(),
         createdAt: new Date()
       } as IEmailResponse;
       
-      // Store the mock response in memory for this session
       if (!this.mockResponses) {
         this.mockResponses = new Map();
       }
-      this.mockResponses.set(responseData.emailId, mockResponse);
+      this.mockResponses.set(responseData.emailId.toString(), mockResponse);
       console.log(`Mock response created for email ${responseData.emailId}`);
       return mockResponse;
     }
   }
 
   async updateEmailResponse(id: string, updates: Partial<InsertEmailResponse>): Promise<IEmailResponse> {
-    const updatedResponse = await EmailResponse.findByIdAndUpdate(
-      id, 
-      updates, 
-      { new: true, runValidators: true }
-    );
+    const db = getDB();
+    const [updatedResponse] = await db.update(emailResponses)
+      .set(updates)
+      .where(eq(emailResponses.id, parseInt(id)))
+      .returning();
     
     if (!updatedResponse) {
       throw new Error(`EmailResponse with id ${id} not found`);
@@ -201,17 +214,28 @@ export class DatabaseStorage implements IStorage {
 
   async getEmailStats() {
     try {
-      const totalEmails = await Email.countDocuments().timeout(3000);
-      const urgentEmails = await Email.countDocuments({ priority: 'urgent' }).timeout(3000);
+      const db = getDB();
+      
+      const totalEmailsResult = await db.select({ count: count() }).from(emails);
+      const totalEmails = totalEmailsResult[0]?.count || 0;
+      
+      const urgentEmailsResult = await db.select({ count: count() })
+        .from(emails)
+        .where(eq(emails.priority, 'urgent'));
+      const urgentEmails = urgentEmailsResult[0]?.count || 0;
       
       // Count resolved emails (those with sent responses)
-      const resolvedEmails = await EmailResponse.distinct('emailId', { sentAt: { $ne: null } }).timeout(3000);
-      const pendingEmails = totalEmails - resolvedEmails.length;
+      const resolvedEmailsResult = await db.selectDistinct({ emailId: emailResponses.emailId })
+        .from(emailResponses)
+        .where(isNotNull(emailResponses.sentAt));
+      const resolvedEmails = resolvedEmailsResult.length;
+      
+      const pendingEmails = totalEmails - resolvedEmails;
 
       return {
         totalEmails,
         urgentEmails,
-        resolvedEmails: resolvedEmails.length,
+        resolvedEmails,
         pendingEmails
       };
     } catch (error) {
@@ -231,14 +255,14 @@ export class DatabaseStorage implements IStorage {
 
   async getSentimentDistribution() {
     try {
-      const results = await Email.aggregate([
-        {
-          $group: {
-            _id: '$sentiment',
-            count: { $sum: 1 }
-          }
-        }
-      ]).timeout(3000);
+      const db = getDB();
+      
+      const results = await db.select({
+        sentiment: emails.sentiment,
+        count: count()
+      })
+      .from(emails)
+      .groupBy(emails.sentiment);
 
       const distribution = { positive: 0, negative: 0, neutral: 0 };
       const total = results.reduce((sum, item) => sum + item.count, 0);
@@ -246,16 +270,15 @@ export class DatabaseStorage implements IStorage {
       if (total > 0) {
         results.forEach(item => {
           const percentage = Math.round((item.count / total) * 100);
-          if (item._id === 'positive') distribution.positive = percentage;
-          else if (item._id === 'negative') distribution.negative = percentage;
-          else if (item._id === 'neutral') distribution.neutral = percentage;
+          if (item.sentiment === 'positive') distribution.positive = percentage;
+          else if (item.sentiment === 'negative') distribution.negative = percentage;
+          else if (item.sentiment === 'neutral') distribution.neutral = percentage;
         });
       }
 
       return distribution;
     } catch (error) {
       console.log('Database unavailable, returning sample sentiment data');
-      // Sample distribution for demo
       return {
         positive: 45,
         negative: 25,
@@ -265,46 +288,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCategoryBreakdown() {
-    const results = await Email.aggregate([
-      {
-        $match: { category: { $ne: null } }
-      },
-      {
-        $group: {
-          _id: '$category',
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $sort: { count: -1 }
-      }
-    ]);
-
-    return results.map(result => ({
-      category: result._id,
-      count: result.count
-    }));
-  }
-
-  async getCategoryBreakdown() {
     try {
-      const results = await Email.aggregate([
-        {
-          $match: { category: { $ne: null } }
-        },
-        {
-          $group: {
-            _id: '$category',
-            count: { $sum: 1 }
-          }
-        },
-        {
-          $sort: { count: -1 }
-        }
-      ]).timeout(3000);
+      const db = getDB();
+      
+      const results = await db.select({
+        category: emails.category,
+        count: count()
+      })
+      .from(emails)
+      .where(isNotNull(emails.category))
+      .groupBy(emails.category)
+      .orderBy(desc(count()));
 
       return results.map(result => ({
-        category: result._id,
+        category: result.category,
         count: result.count
       }));
     } catch (error) {
@@ -323,7 +320,7 @@ export class DatabaseStorage implements IStorage {
   private getSampleEmails(): IEmail[] {
     return [
       {
-        _id: '1',
+        id: 1,
         sender: "john.doe@techcorp.com",
         subject: "🚨 Urgent: Server downtime issue",
         body: "Hi team, we're experiencing server downtime on production. This is affecting all our customers. Please prioritize this issue immediately. The error logs show database connection failures.",
@@ -336,7 +333,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000)
       } as IEmail,
       {
-        _id: '2',
+        id: 2,
         sender: "sarah.johnson@clientcompany.com",
         subject: "✨ Thank you for the excellent service!",
         body: "I wanted to reach out and express my gratitude for the outstanding support your team provided during our recent project. Everything went smoothly and exceeded our expectations.",
@@ -349,7 +346,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000)
       } as IEmail,
       {
-        _id: '3',
+        id: 3,
         sender: "marketing@partner.com",
         subject: "🤝 Partnership opportunity discussion",
         body: "Hello, we've been following your company's growth and would like to discuss potential partnership opportunities. We believe there's great synergy between our organizations.",
@@ -362,7 +359,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000)
       } as IEmail,
       {
-        _id: '4',
+        id: 4,
         sender: "billing@vendor.com",
         subject: "💸 Invoice #INV-2024-001 is overdue",
         body: "This is a reminder that invoice #INV-2024-001 for $2,500 is now 30 days overdue. Please arrange payment at your earliest convenience to avoid service disruption.",
@@ -375,7 +372,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000)
       } as IEmail,
       {
-        _id: '5',
+        id: 5,
         sender: "hr@company.com",
         subject: "🎉 Team building event next Friday",
         body: "Reminder: Our monthly team building event is scheduled for next Friday at 3 PM in the main conference room. Pizza will be provided! Please confirm your attendance.",
