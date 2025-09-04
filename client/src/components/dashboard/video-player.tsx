@@ -9,8 +9,18 @@ interface VideoPlayerProps {
 
 export default function VideoPlayer({ videoSrc, className = "" }: VideoPlayerProps) {
   const [isMuted, setIsMuted] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Auto-play when component mounts
+  const handleVideoLoad = () => {
+    if (videoRef.current) {
+      videoRef.current.play().catch((error) => {
+        console.log("Auto-play was prevented:", error);
+        setIsPlaying(false);
+      });
+    }
+  };
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -34,11 +44,15 @@ export default function VideoPlayer({ videoSrc, className = "" }: VideoPlayerPro
     <div className={`relative group ${className}`}>
       <video
         ref={videoRef}
-        className="w-full h-auto rounded-lg shadow-lg"
+        className="w-full h-auto rounded-lg shadow-lg max-w-full"
         muted={isMuted}
         loop
+        autoPlay
+        playsInline
+        onLoadedData={handleVideoLoad}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
+        style={{ display: 'block' }}
       >
         <source src={videoSrc} type="video/mp4" />
         Your browser does not support the video tag.
