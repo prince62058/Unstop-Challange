@@ -588,3 +588,123 @@
     border-radius: 10px;
   }
 }
+
+/* Mobile Phone Optimization */
+@media (max-width: 767px) {
+  /* Hide sidebar on mobile */
+  aside {
+    display: none !important;
+  }
+  
+  /* Full width main content */
+  .min-h-screen.flex {
+    display: block !important;
+  }
+  
+  main {
+    width: 100% !important;
+  }
+  
+  /* Mobile header */
+  header {
+    margin: 0.5rem !important;
+    padding: 1rem !important;
+  }
+  
+  header h1 {
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  /* Stack header content vertically */
+  header .flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+  }
+  
+  /* Mobile stats - 2 columns */
+  .grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+  
+  /* Email list full width */
+  .xl\\:col-span-3 {
+    grid-column: span 1 !important;
+  }
+  
+  /* Stack main content vertically */
+  .grid.grid-cols-1.xl\\:grid-cols-4 {
+    grid-template-columns: repeat(1, 1fr) !important;
+    gap: 1rem !important;
+  }
+  
+  /* Mobile email cards */
+  .email-card .flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+  
+  .email-card .justify-between {
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+  
+  /* Mobile buttons full width */
+  .btn-gradient {
+    width: 100% !important;
+  }
+  
+  /* Reduce text sizes */
+  .text-4xl {
+    font-size: 1.875rem !important;
+  }
+  
+  .text-3xl {
+    font-size: 1.5rem !important;
+  }
+  
+  .text-2xl {
+    font-size: 1.25rem !important;
+  }
+}
+
+@media (max-width: 479px) {
+  /* Very small phones - single column */
+  .grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
+    grid-template-columns: repeat(1, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+  
+  header h1 {
+    font-size: 1.25rem !important;
+  }
+  
+  .stat-card .text-4xl {
+    font-size: 1.5rem !important;
+  }
+  
+  .email-card .w-14 {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+  
+  .email-card h4 {
+    font-size: 1rem !important;
+  }
+  
+  /* Compact sections */
+  section {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  /* Feature tags smaller */
+  .bg-blue-50, .bg-green-50, .bg-purple-50 {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+}
