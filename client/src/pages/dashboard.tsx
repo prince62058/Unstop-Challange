@@ -96,6 +96,14 @@ export default function Dashboard() {
       <Sidebar />
       
       <main className="flex-1 overflow-auto">
+        {/* Full Width Video Player at Top */}
+        <div className="w-full -mx-0">
+          <VideoPlayer 
+            videoSrc="/hero-video.mp4"
+            className="w-full h-64 md:h-80 lg:h-96"
+          />
+        </div>
+        
         <Header onSyncEmails={handleSyncEmails} />
 
         {/* Hero Section with Video */}

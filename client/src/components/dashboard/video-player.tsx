@@ -44,7 +44,7 @@ export default function VideoPlayer({ videoSrc, className = "" }: VideoPlayerPro
     <div className={`relative group ${className}`}>
       <video
         ref={videoRef}
-        className="w-full h-auto rounded-lg shadow-lg max-w-full"
+        className="w-full h-full object-cover"
         muted={isMuted}
         loop
         autoPlay
