@@ -8,6 +8,7 @@ import AnalyticsPanel from "@/components/dashboard/analytics-panel";
 import { useEmails } from "@/hooks/use-emails";
 import { useAnalytics } from "@/hooks/use-analytics";
 import type { IEmail } from "@shared/schema";
+import VideoPlayer from "@/components/dashboard/video-player";
 
 type ProcessedEmail = {
   id: string;
@@ -74,7 +75,7 @@ export default function Dashboard() {
           'Content-Type': 'application/json',
         }
       });
-      
+
       if (response.ok) {
         const result = await response.json();
         console.log('Email sync successful:', result.message);
@@ -91,12 +92,28 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen flex bg-background mobile-stack" data-testid="dashboard-page">
+    <div className="min-h-screen flex bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Video Section - Full Width at Top */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-3">
+            <h2 className="text-xl font-bold text-gray-800 mb-1">
+              <i className="fas fa-play-circle text-blue-500 mr-2"></i>
+              Product Demo Video
+            </h2>
+            <p className="text-sm text-gray-600">Watch how our AI email system works</p>
+          </div>
+          <VideoPlayer 
+            videoSrc="/attached_assets/Video_Ready_After_Request_1756998302074.mp4"
+            className="max-w-4xl mx-auto"
+          />
+        </div>
+      </div>
+
       <Sidebar />
-      
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto" style={{ marginTop: '320px' }}>
         <Header onSyncEmails={handleSyncEmails} />
-        
+
         {/* White & Pink Hero Section */}
         <section className="px-6 pb-4">
           <div className="glass-card p-6 rounded-xl fade-in bg-gradient-to-r from-pink-50/80 to-rose-50/80 border border-pink-200/50">
@@ -123,7 +140,7 @@ export default function Dashboard() {
             </div>
           </div>
         </section>
-        
+
         <section className="px-6 pb-6 fade-in" style={{animationDelay: '0.2s'}}>
           <StatsCards 
             stats={analytics?.stats as EmailStats | undefined} 

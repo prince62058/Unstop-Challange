@@ -1,5 +1,4 @@
 import { useState } from "react";
-import VideoPlayer from "./video-player";
 
 interface HeaderProps {
   onSyncEmails: () => void;
@@ -72,21 +71,6 @@ export default function Header({ onSyncEmails }: HeaderProps) {
             {isSyncing ? 'Syncing...' : 'Sync Emails'}
           </button>
         </div>
-      </div>
-      
-      {/* Video Section */}
-      <div className="mt-8 bg-white/50 p-6 rounded-xl border border-gray-200">
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
-            <i className="fas fa-play-circle text-blue-500 mr-2"></i>
-            Product Demo
-          </h3>
-          <p className="text-sm text-gray-600">Watch how our AI email system works</p>
-        </div>
-        <VideoPlayer 
-          videoSrc="/attached_assets/Video_Ready_After_Request_1756998302074.mp4"
-          className="max-w-2xl mx-auto"
-        />
       </div>
     </header>
   );
