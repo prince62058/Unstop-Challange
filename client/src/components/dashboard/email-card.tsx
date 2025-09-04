@@ -156,7 +156,7 @@ export default function EmailCard({ email, isSelected, onClick }: EmailCardProps
                 size="sm" 
                 onClick={handleGenerateResponse}
                 disabled={generateResponseMutation.isPending}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs"
+                className="bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 text-xs font-semibold shadow-md border-0"
                 data-testid={`button-generate-response-${email.id}`}
               >
                 <i className={`fas ${generateResponseMutation.isPending ? 'fa-spinner fa-spin' : 'fa-robot'} mr-1`}></i>

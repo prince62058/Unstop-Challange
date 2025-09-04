@@ -200,7 +200,7 @@ export default function AIResponsePanel({ selectedEmail, onResponseSent }: AIRes
                     <Button 
                       onClick={handleSendResponse}
                       disabled={sendResponseMutation.isPending || !editedResponse.trim()}
-                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                      className="flex-1 bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 font-semibold shadow-lg border-0"
                       data-testid="button-send-response"
                     >
                       <i className={`fas ${sendResponseMutation.isPending ? 'fa-spinner fa-spin' : 'fa-paper-plane'} mr-2`}></i>
@@ -219,7 +219,7 @@ export default function AIResponsePanel({ selectedEmail, onResponseSent }: AIRes
                   <Button 
                     onClick={handleGenerateResponse}
                     disabled={generateResponseMutation.isPending}
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 font-semibold shadow-lg border-0"
                     data-testid="button-generate-response"
                   >
                     <i className={`fas ${generateResponseMutation.isPending ? 'fa-spinner fa-spin' : 'fa-robot'} mr-2`}></i>
