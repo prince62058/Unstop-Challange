@@ -40,6 +40,7 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  private mockResponses = new Map<string, IEmailResponse>();
   async getUser(id: string): Promise<IUser | undefined> {
     try {
       const user = await User.findById(id);
@@ -149,8 +150,12 @@ export class DatabaseStorage implements IStorage {
         .timeout(3000)
         .exec();
     } catch (error) {
-      console.log('Database unavailable for responses, returning sample data');
-      // Return sample responses for demo
+      console.log('Database unavailable for responses, checking mock storage');
+      // Check mock responses if available
+      if (this.mockResponses && this.mockResponses.has(emailId)) {
+        const mockResponse = this.mockResponses.get(emailId);
+        return mockResponse ? [mockResponse] : [];
+      }
       return [];
     }
   }
@@ -158,14 +163,25 @@ export class DatabaseStorage implements IStorage {
   async createEmailResponse(responseData: InsertEmailResponse): Promise<IEmailResponse> {
     try {
       const response = new EmailResponse(responseData);
-      return await response.save();
+      const savedResponse = await response.save();
+      console.log(`Email response saved to database: ${responseData.emailId}`);
+      return savedResponse;
     } catch (error) {
       console.log('Database unavailable, creating mock response');
-      return {
+      const mockResponse = {
         _id: Date.now().toString(),
         ...responseData,
+        id: Date.now().toString(),
         createdAt: new Date()
       } as IEmailResponse;
+      
+      // Store the mock response in memory for this session
+      if (!this.mockResponses) {
+        this.mockResponses = new Map();
+      }
+      this.mockResponses.set(responseData.emailId, mockResponse);
+      console.log(`Mock response created for email ${responseData.emailId}`);
+      return mockResponse;
     }
   }
 
