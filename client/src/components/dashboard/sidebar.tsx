@@ -96,12 +96,12 @@ export default function Sidebar() {
 
       {!isCollapsed && (
         <div className="mt-6">
-          <div className="glass-card p-4 rounded-xl border-2 border-dashed border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+          <div className="glass-card p-4 rounded-xl border border-slate-600/50 bg-gradient-to-r from-slate-800/30 to-slate-900/30">
             <div className="text-center">
-              <i className="fas fa-star text-2xl text-yellow-500 mb-2"></i>
-              <h4 className="font-semibold text-sm mb-1">Upgrade to Pro</h4>
-              <p className="text-xs text-muted-foreground mb-3">Unlock advanced AI features</p>
-              <button className="btn-gradient w-full py-2 rounded-lg text-sm font-semibold">
+              <i className="fas fa-crown text-2xl text-yellow-400 mb-2"></i>
+              <h4 className="font-semibold text-sm mb-1 text-white">Professional Plan</h4>
+              <p className="text-xs text-slate-300 mb-3">Advanced analytics & features</p>
+              <button className="btn-gradient w-full py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600">
                 Upgrade Now
               </button>
             </div>

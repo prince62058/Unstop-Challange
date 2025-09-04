@@ -76,24 +76,27 @@ export default function Dashboard() {
       <main className="flex-1 overflow-auto">
         <Header onSyncEmails={handleSyncEmails} />
         
-        {/* Hero Section */}
+        {/* Professional Hero Section */}
         <section className="px-6 pb-4">
-          <div className="glass-card p-6 rounded-xl fade-in bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-100">
+          <div className="glass-card p-6 rounded-xl fade-in bg-gradient-to-r from-slate-800/50 to-slate-900/50 border border-slate-700/50">
             <div className="flex items-center justify-between mobile-stack gap-4">
               <div>
-                <h2 className="text-xl font-bold gradient-text mb-2">Welcome back! 👋</h2>
-                <p className="text-muted-foreground text-sm">
-                  Your AI assistant has processed <span className="font-semibold text-blue-600">{analytics?.stats?.totalEmails || 0}</span> emails 
-                  and identified <span className="font-semibold text-red-500">{analytics?.stats?.urgentEmails || 0}</span> urgent items.
+                <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                  <i className="fas fa-chart-line text-blue-400"></i>
+                  Professional Dashboard
+                </h2>
+                <p className="text-slate-300 text-sm">
+                  AI assistant has processed <span className="font-semibold text-blue-400">{analytics?.stats?.totalEmails || 0}</span> emails 
+                  and identified <span className="font-semibold text-orange-400">{analytics?.stats?.urgentEmails || 0}</span> urgent items.
                 </p>
               </div>
               <div className="flex items-center gap-3 mobile-full">
-                <div className="glass-card p-3 rounded-xl bg-green-100">
-                  <i className="fas fa-chart-line text-2xl text-green-600"></i>
+                <div className="glass-card p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
+                  <i className="fas fa-trending-up text-2xl text-emerald-400"></i>
                 </div>
                 <div className="text-right mobile-hidden">
-                  <div className="text-2xl font-bold text-green-600">+24%</div>
-                  <div className="text-xs text-muted-foreground">vs last week</div>
+                  <div className="text-2xl font-bold text-emerald-400">+24%</div>
+                  <div className="text-xs text-slate-400">vs last week</div>
                 </div>
               </div>
             </div>
