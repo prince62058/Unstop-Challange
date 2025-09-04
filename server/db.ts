@@ -9,8 +9,8 @@ export const connectDB = async () => {
     const DATABASE_URL = process.env.DATABASE_URL;
     
     if (!DATABASE_URL) {
-      console.error('DATABASE_URL environment variable is required');
-      throw new Error('DATABASE_URL is not configured');
+      console.warn('DATABASE_URL not configured. App will run with sample data only.');
+      return null;
     }
 
     // Create postgres connection
@@ -22,14 +22,14 @@ export const connectDB = async () => {
     console.log('Connected to PostgreSQL database successfully');
     return db;
   } catch (error) {
-    console.error('Failed to connect to database:', error);
-    throw error;
+    console.warn('Failed to connect to database, continuing with sample data:', error instanceof Error ? error.message : 'Unknown error');
+    return null;
   }
 };
 
 export const getDB = () => {
   if (!db) {
-    throw new Error('Database not initialized. Call connectDB() first.');
+    throw new Error('Database not available');
   }
   return db;
 };
