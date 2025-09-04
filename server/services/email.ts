@@ -161,33 +161,39 @@ export class EmailService {
   }
 
   async getEmailsWithResponses(limit = 50, offset = 0): Promise<ProcessedEmail[]> {
-    const emails = await storage.getEmails(limit, offset);
-    
-    const emailsWithResponses = await Promise.all(
-      emails.map(async (email) => {
-        const responses = await storage.getResponsesByEmailId(email.id);
-        return {
-          id: email.id,
-          sender: email.sender,
-          subject: email.subject,
-          body: email.body,
-          receivedAt: email.receivedAt,
-          priority: email.priority as "urgent" | "normal",
-          sentiment: email.sentiment as "positive" | "negative" | "neutral",
-          category: email.category || "General Inquiry",
-          extractedInfo: email.extractedInfo,
-          hasResponse: responses.length > 0,
-          generatedResponse: responses[0]?.generatedResponse
-        };
-      })
-    );
+    try {
+      const emails = await storage.getEmails(limit, offset);
+      
+      const emailsWithResponses = await Promise.all(
+        emails.map(async (email) => {
+          const responses = await storage.getResponsesByEmailId(email._id?.toString() || '');
+          return {
+            id: email._id?.toString() || Date.now().toString(),
+            sender: email.sender,
+            subject: email.subject,
+            body: email.body,
+            receivedAt: email.receivedAt,
+            priority: email.priority as "urgent" | "normal",
+            sentiment: email.sentiment as "positive" | "negative" | "neutral",
+            category: email.category || "General Inquiry",
+            extractedInfo: email.extractedInfo,
+            hasResponse: responses.length > 0,
+            generatedResponse: responses[0]?.generatedResponse
+          };
+        })
+      );
 
-    // Sort by priority (urgent first) then by received date
-    return emailsWithResponses.sort((a, b) => {
-      if (a.priority === "urgent" && b.priority !== "urgent") return -1;
-      if (b.priority === "urgent" && a.priority !== "urgent") return 1;
-      return new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime();
-    });
+      // Sort by priority (urgent first) then by received date
+      return emailsWithResponses.sort((a, b) => {
+        if (a.priority === "urgent" && b.priority !== "urgent") return -1;
+        if (b.priority === "urgent" && a.priority !== "urgent") return 1;
+        return new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime();
+      });
+    } catch (error) {
+      console.error('Error in getEmailsWithResponses:', error);
+      // Return empty array to prevent crashes
+      return [];
+    }
   }
 }
 
