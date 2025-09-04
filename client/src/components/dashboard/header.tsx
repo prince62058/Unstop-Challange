@@ -46,15 +46,6 @@ export default function Header({ onSyncEmails }: HeaderProps) {
           >
             <i className="fas fa-user-circle text-2xl text-blue-500"></i>
           </Button>
-          <Button 
-            variant="ghost"
-            className="glass-card hover:shadow-lg transition-all p-3 rounded-xl mobile-hidden"
-            data-testid="button-notifications"
-          >
-            <i className="fas fa-bell text-xl text-blue-500 relative">
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">3</span>
-            </i>
-          </Button>
         </div>
       </div>
     </header>
