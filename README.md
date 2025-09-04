@@ -2,6 +2,12 @@
 
 🤖 An intelligent email management system that automatically processes, analyzes, and generates responses for customer support emails using AI.
 
+## 🔗 Live Demo
+
+**[View Live Application](https://unstop-challange.onrender.com/)**
+
+Experience the full-featured AI email management system in action!
+
 ## 🌟 Features
 
 - **Automatic Email Sync**: Connect your Gmail account for real-time email synchronization
