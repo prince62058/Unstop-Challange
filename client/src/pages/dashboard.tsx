@@ -66,7 +66,28 @@ export default function Dashboard() {
   };
 
   const handleSyncEmails = async () => {
-    await refetchEmails();
+    try {
+      // Call the sync endpoint to populate database with sample data
+      const response = await fetch('/api/emails/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Email sync successful:', result.message);
+        // Refresh the email list after syncing
+        await refetchEmails();
+      } else {
+        console.error('Email sync failed:', response.status);
+      }
+    } catch (error) {
+      console.error('Error during email sync:', error);
+      // Fallback to just refetching if sync fails
+      await refetchEmails();
+    }
   };
 
   return (

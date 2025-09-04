@@ -68,7 +68,7 @@ export class EmailService {
         );
 
         const emailResponseData: InsertEmailResponse = {
-          emailId: email.id,
+          emailId: email.id!,
           generatedResponse: responseData.response,
           confidence: Math.round(responseData.confidence * 100),
           isEdited: false,
@@ -125,7 +125,7 @@ export class EmailService {
       );
 
       const emailResponseData: InsertEmailResponse = {
-        emailId: email._id?.toString() || emailId,
+        emailId: email.id || parseInt(emailId),
         generatedResponse: responseData.response,
         confidence: Math.round(responseData.confidence * 100),
         isEdited: false,
@@ -161,7 +161,7 @@ Support Team`;
     }
 
     const response = responses[0];
-    await storage.updateEmailResponse(response.id, {
+    await storage.updateEmailResponse(response.id!.toString(), {
       finalResponse,
       sentAt: new Date(),
       isEdited: finalResponse !== response.generatedResponse
@@ -187,9 +187,9 @@ Support Team`;
       
       const emailsWithResponses = await Promise.all(
         emails.map(async (email) => {
-          const responses = await storage.getResponsesByEmailId(email._id?.toString() || '');
+          const responses = await storage.getResponsesByEmailId(email.id?.toString() || '');
           return {
-            id: email._id?.toString() || Date.now().toString(),
+            id: email.id?.toString() || Date.now().toString(),
             sender: email.sender,
             subject: email.subject,
             body: email.body,

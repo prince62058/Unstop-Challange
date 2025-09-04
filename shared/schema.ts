@@ -52,7 +52,7 @@ export interface IUser {
   id?: number;
   username: string;
   password: string;
-  emailAddress?: string;
+  emailAddress?: string | null;
   createdAt?: Date;
 }
 
@@ -64,7 +64,7 @@ export interface IEmail {
   receivedAt: Date;
   priority: 'urgent' | 'normal';
   sentiment: 'positive' | 'negative' | 'neutral';
-  category?: string;
+  category?: string | null;
   extractedInfo?: any;
   isProcessed: boolean;
   createdAt?: Date;
@@ -75,8 +75,8 @@ export interface IEmailResponse {
   emailId: number;
   generatedResponse: string;
   isEdited: boolean;
-  finalResponse?: string;
-  sentAt?: Date;
-  confidence?: number;
+  finalResponse?: string | null;
+  sentAt?: Date | null;
+  confidence?: number | null;
   createdAt?: Date;
 }

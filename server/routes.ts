@@ -207,6 +207,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sync emails endpoint - populates database with sample data
+  app.post("/api/emails/sync", async (req, res) => {
+    try {
+      console.log("Starting email sync...");
+      
+      // Sample email data to populate the database
+      const sampleEmails = [
+        {
+          sender: "john.doe@techcorp.com",
+          subject: "🚨 Urgent: Server downtime issue",
+          body: "Hi team, we're experiencing server downtime on production. This is affecting all our customers. Please prioritize this issue immediately. The error logs show database connection failures.",
+          priority: "urgent" as const,
+          sentiment: "negative" as const,
+          category: "Technical Issue",
+          receivedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+          extractedInfo: JSON.stringify({
+            phoneNumbers: [],
+            alternateEmails: [],
+            customerRequirements: ["Fix server downtime", "Database connection issues"],
+            urgency: "high"
+          }),
+          isProcessed: true
+        },
+        {
+          sender: "sarah.johnson@clientcompany.com",
+          subject: "✨ Thank you for the excellent service!",
+          body: "I wanted to reach out and express my gratitude for the outstanding support your team provided during our recent project. Everything went smoothly and exceeded our expectations.",
+          priority: "normal" as const,
+          sentiment: "positive" as const,
+          category: "Customer Feedback",
+          receivedAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+          extractedInfo: JSON.stringify({
+            phoneNumbers: [],
+            alternateEmails: [],
+            customerRequirements: ["Positive feedback"],
+            satisfactionLevel: "high"
+          }),
+          isProcessed: true
+        },
+        {
+          sender: "marketing@partner.com",
+          subject: "🤝 Partnership opportunity discussion",
+          body: "Hello, we've been following your company's growth and would like to discuss potential partnership opportunities. We believe there's great synergy between our organizations.",
+          priority: "normal" as const,
+          sentiment: "neutral" as const,
+          category: "Business Development",
+          receivedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+          extractedInfo: JSON.stringify({
+            phoneNumbers: [],
+            alternateEmails: [],
+            customerRequirements: ["Partnership discussion", "Business collaboration"],
+            opportunityType: "partnership"
+          }),
+          isProcessed: false
+        },
+        {
+          sender: "billing@vendor.com",
+          subject: "💸 Invoice #INV-2024-001 is overdue",
+          body: "This is a reminder that invoice #INV-2024-001 for $2,500 is now 30 days overdue. Please arrange payment at your earliest convenience to avoid service disruption.",
+          priority: "urgent" as const,
+          sentiment: "negative" as const,
+          category: "Financial",
+          receivedAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
+          extractedInfo: JSON.stringify({
+            phoneNumbers: [],
+            alternateEmails: [],
+            customerRequirements: ["Payment reminder", "Invoice settlement"],
+            invoiceNumber: "INV-2024-001",
+            amount: "$2,500"
+          }),
+          isProcessed: false
+        },
+        {
+          sender: "hr@company.com",
+          subject: "🎉 Team building event next Friday",
+          body: "Reminder: Our monthly team building event is scheduled for next Friday at 3 PM in the main conference room. Pizza will be provided! Please confirm your attendance.",
+          priority: "normal" as const,
+          sentiment: "positive" as const,
+          category: "HR/Internal",
+          receivedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+          extractedInfo: JSON.stringify({
+            phoneNumbers: [],
+            alternateEmails: [],
+            customerRequirements: ["Event confirmation", "Attendance tracking"],
+            eventType: "team building"
+          }),
+          isProcessed: true
+        }
+      ];
+
+      // Insert sample emails into database
+      const insertedEmails = [];
+      for (const emailData of sampleEmails) {
+        try {
+          const email = await storage.createEmail(emailData);
+          insertedEmails.push(email);
+          console.log(`Created email: ${email.subject}`);
+        } catch (error) {
+          console.error(`Failed to create email: ${emailData.subject}`, error);
+        }
+      }
+
+      console.log(`Email sync completed. Created ${insertedEmails.length} emails.`);
+      
+      res.json({
+        success: true,
+        message: `Successfully synced ${insertedEmails.length} emails`,
+        emailsCreated: insertedEmails.length,
+        emails: insertedEmails
+      });
+    } catch (error) {
+      console.error("Failed to sync emails:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Failed to sync emails",
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
