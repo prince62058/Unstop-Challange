@@ -26,12 +26,12 @@ export default function Header({ onSyncEmails }: HeaderProps) {
             </div>
             <div>
               <h1 className="text-4xl font-black gradient-text" data-testid="page-title">
-                AI Email Hub
+                AI-Powered Communication Assistant 🤖
               </h1>
               <div className="flex items-center gap-2 mt-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <p className="text-muted-foreground font-semibold" data-testid="page-subtitle">
-                  Intelligent email processing & automation
+                  Intelligent email management system
                 </p>
               </div>
             </div>

@@ -25,11 +25,11 @@ export default function Sidebar() {
             </div>
             {!isCollapsed && (
               <div>
-                <h1 className="text-2xl font-black gradient-text" data-testid="app-title">
-                  AI Email Hub
+                <h1 className="text-xl font-black gradient-text" data-testid="app-title">
+                  AI-Powered Communication Assistant
                 </h1>
                 <p className="text-xs font-semibold text-muted-foreground">
-                  Smart Automation
+                  🤖 Smart Email Management
                 </p>
               </div>
             )}
