@@ -7,7 +7,7 @@ import AIResponsePanel from "@/components/dashboard/ai-response-panel";
 import AnalyticsPanel from "@/components/dashboard/analytics-panel";
 import { useEmails } from "@/hooks/use-emails";
 import { useAnalytics } from "@/hooks/use-analytics";
-import type { Email } from "@shared/schema";
+import type { IEmail } from "@shared/schema";
 
 type ProcessedEmail = {
   id: string;

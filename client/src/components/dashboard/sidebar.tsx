@@ -8,100 +8,165 @@ export default function Sidebar() {
   const isActive = (path: string) => location === path;
 
   const navItems = [
-    { path: "/", icon: "fa-tachometer-alt", label: "Dashboard", badge: null },
-    { path: "/emails", icon: "fa-envelope", label: "Emails", badge: "24" },
-    { path: "/responses", icon: "fa-reply", label: "AI Responses", badge: null },
-    { path: "/analytics", icon: "fa-chart-bar", label: "Analytics", badge: null },
+    { path: "/", icon: "fa-home", label: "Dashboard", badge: null },
+    { path: "/emails", icon: "fa-envelope-open", label: "Emails", badge: "24" },
+    { path: "/responses", icon: "fa-magic", label: "AI Responses", badge: null },
+    { path: "/analytics", icon: "fa-chart-line", label: "Analytics", badge: null },
     { path: "/settings", icon: "fa-cog", label: "Settings", badge: null }
   ];
 
   return (
-    <aside className={`modern-sidebar ${isCollapsed ? 'w-20' : 'w-64'} min-h-screen p-6 slide-in transition-all duration-300`} data-testid="sidebar">
-      <div className="mb-8 relative">
-        <div className={`transition-all duration-300 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
-          <h1 className="text-xl font-bold gradient-text flex items-center gap-3 mb-2" data-testid="app-title">
-            <i className="fas fa-robot text-2xl"></i>
-            {!isCollapsed && "AI Communication Assistant"}
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            {!isCollapsed && "Smart Email Management"}
-          </p>
+    <aside className={`modern-sidebar ${isCollapsed ? 'w-20' : 'w-72'} min-h-screen p-6 slide-in transition-all duration-500 bg-gradient-to-b from-white/98 to-blue-50/98 backdrop-blur-3xl`} data-testid="sidebar">
+      <div className="mb-10 relative">
+        <div className={`transition-all duration-500 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-xl">
+              <i className="fas fa-brain text-white text-2xl"></i>
+            </div>
+            {!isCollapsed && (
+              <div>
+                <h1 className="text-2xl font-black gradient-text" data-testid="app-title">
+                  AI Email Hub
+                </h1>
+                <p className="text-xs font-semibold text-muted-foreground">
+                  Smart Automation
+                </p>
+              </div>
+            )}
+          </div>
+          {!isCollapsed && (
+            <div className="flex items-center gap-2 bg-green-50 px-3 py-2 rounded-full w-fit">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-xs font-bold text-green-700">ONLINE</span>
+            </div>
+          )}
         </div>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-2 glass-card p-2 rounded-full hover:shadow-lg transition-all"
+          className="absolute -right-3 top-4 glass-card p-3 rounded-full hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-110"
         >
-          <i className={`fas ${isCollapsed ? 'fa-angle-right' : 'fa-angle-left'} text-sm`}></i>
+          <i className={`fas ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'} text-sm`}></i>
         </button>
       </div>
       
-      <nav className="space-y-3">
+      <nav className="space-y-4">
         {navItems.map((item, index) => (
           <Link key={item.path} href={item.path}>
             <div 
-              className={`glass-card flex items-center gap-4 px-4 py-3 rounded-xl transition-all cursor-pointer bounce-in ${
+              className={`group relative flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 cursor-pointer bounce-in ${
                 isActive(item.path) || (item.path === "/" && isActive("/dashboard"))
-                  ? "btn-gradient text-white shadow-lg" 
-                  : "hover:shadow-lg hover:scale-105"
+                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-2xl transform scale-105" 
+                  : "glass-card hover:shadow-xl hover:scale-[1.02] hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
               }`} 
               style={{animationDelay: `${index * 0.1}s`}}
               data-testid={`nav-${item.label.toLowerCase()}`}
             >
-              <i className={`fas ${item.icon} text-lg ${isCollapsed ? 'mx-auto' : ''}`}></i>
+              <div className={`relative ${
+                isActive(item.path) || (item.path === "/" && isActive("/dashboard"))
+                  ? "" : "group-hover:scale-110 transition-transform duration-300"
+              }`}>
+                <i className={`fas ${item.icon} text-xl ${
+                  isCollapsed ? 'mx-auto' : ''
+                } ${
+                  isActive(item.path) || (item.path === "/" && isActive("/dashboard"))
+                    ? "text-white" : "text-gray-600 group-hover:text-blue-600"
+                }`}></i>
+              </div>
               {!isCollapsed && (
                 <>
-                  <span className="font-medium">{item.label}</span>
+                  <span className={`font-bold text-lg ${
+                    isActive(item.path) || (item.path === "/" && isActive("/dashboard"))
+                      ? "text-white" : "text-gray-700 group-hover:text-blue-700"
+                  }`}>{item.label}</span>
                   {item.badge && (
-                    <span className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse" data-testid="unread-count">
-                      {item.badge}
-                    </span>
+                    <div className="ml-auto relative">
+                      <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-full animate-pulse shadow-lg" data-testid="unread-count">
+                        {item.badge}
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 rounded-full animate-ping opacity-30"></div>
+                    </div>
                   )}
                 </>
+              )}
+              {/* Active indicator */}
+              {(isActive(item.path) || (item.path === "/" && isActive("/dashboard"))) && (
+                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></div>
               )}
             </div>
           </Link>
         ))}
       </nav>
       
-      <div className="mt-8">
-        <div className="glass-card p-4 rounded-xl" data-testid="email-account-info">
+      <div className="mt-10">
+        <div className="glass-card p-5 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200/50" data-testid="email-account-info">
           {!isCollapsed && (
             <>
-              <h3 className="font-semibold mb-3 text-sm gradient-text">Email Account</h3>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="relative">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                  <div className="absolute inset-0 w-3 h-3 bg-green-500 rounded-full animate-ping opacity-30"></div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl">
+                  <i className="fas fa-envelope text-white text-lg"></i>
                 </div>
-                <span className="text-sm font-medium" data-testid="email-address">support@company.com</span>
+                <h3 className="font-black text-lg gradient-text-static">Connected Account</h3>
               </div>
-              <p className="text-xs text-muted-foreground flex items-center gap-2">
-                <i className="fab fa-google text-red-500"></i>
-                Connected via Gmail API
-              </p>
-              <div className="mt-3 flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Last sync:</span>
-                <span className="font-medium text-green-500">2 min ago</span>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="relative">
+                  <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                  <div className="absolute inset-0 w-4 h-4 bg-green-500 rounded-full animate-ping opacity-30"></div>
+                </div>
+                <span className="text-sm font-bold text-gray-700" data-testid="email-address">support@company.com</span>
+              </div>
+              <div className="flex items-center gap-2 mb-3">
+                <i className="fab fa-google text-red-500 text-lg"></i>
+                <span className="text-sm font-semibold text-gray-600">Gmail API</span>
+              </div>
+              <div className="bg-white/70 rounded-xl p-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-gray-600">Last sync:</span>
+                  <span className="font-bold text-green-600">2 min ago</span>
+                </div>
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="font-medium text-gray-600">Status:</span>
+                  <span className="font-bold text-green-600">Active</span>
+                </div>
               </div>
             </>
           )}
           {isCollapsed && (
-            <div className="flex flex-col items-center gap-2">
-              <i className="fab fa-google text-xl text-red-500"></i>
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <div className="flex flex-col items-center gap-3">
+              <i className="fab fa-google text-2xl text-red-500"></i>
+              <div className="relative">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="absolute inset-0 w-3 h-3 bg-green-500 rounded-full animate-ping opacity-30"></div>
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {!isCollapsed && (
-        <div className="mt-6">
-          <div className="glass-card p-4 rounded-xl border border-pink-200/50 bg-gradient-to-r from-pink-50/60 to-rose-50/60">
+        <div className="mt-8">
+          <div className="glass-card p-6 rounded-2xl border border-purple-200/50 bg-gradient-to-br from-purple-50 to-pink-50">
             <div className="text-center">
-              <i className="fas fa-crown text-2xl text-pink-500 mb-2"></i>
-              <h4 className="font-semibold text-sm mb-1 text-gray-800">Professional Plan</h4>
-              <p className="text-xs text-gray-600 mb-3">Advanced analytics & features</p>
-              <button className="btn-gradient w-full py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-pink-500 to-pink-600">
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl w-fit mx-auto mb-3">
+                <i className="fas fa-crown text-white text-2xl"></i>
+              </div>
+              <h4 className="font-black text-lg mb-2 gradient-text-static">Pro Plan</h4>
+              <p className="text-sm text-gray-600 mb-4 font-medium">Unlock advanced AI features</p>
+              <div className="space-y-2 mb-4 text-xs">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <i className="fas fa-check text-green-500"></i>
+                  <span>Unlimited AI responses</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <i className="fas fa-check text-green-500"></i>
+                  <span>Advanced analytics</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <i className="fas fa-check text-green-500"></i>
+                  <span>Priority support</span>
+                </div>
+              </div>
+              <button className="btn-gradient w-full py-3 rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300">
+                <i className="fas fa-rocket mr-2"></i>
                 Upgrade Now
               </button>
             </div>

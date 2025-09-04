@@ -1,5 +1,3 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -66,19 +64,19 @@ export default function EmailCard({ email, isSelected, onClick }: EmailCardProps
 
   const getPriorityBadgeClass = (priority: string) => {
     if (priority === "urgent") {
-      return "bg-destructive text-destructive-foreground";
+      return "bg-gradient-to-r from-red-500 to-red-600 text-white border-red-300";
     }
-    return "bg-yellow-500 text-white";
+    return "bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-yellow-300";
   };
 
   const getSentimentBadgeClass = (sentiment: string) => {
     if (sentiment === "positive") {
-      return "bg-green-500 text-white";
+      return "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-300";
     }
     if (sentiment === "negative") {
-      return "bg-destructive text-destructive-foreground";
+      return "bg-gradient-to-r from-red-500 to-pink-500 text-white border-red-300";
     }
-    return "bg-muted text-muted-foreground";
+    return "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-gray-300";
   };
 
   const extractPhoneNumbers = (extractedInfo: any) => {
@@ -86,86 +84,106 @@ export default function EmailCard({ email, isSelected, onClick }: EmailCardProps
   };
 
   return (
-    <Card 
-      className={`cursor-pointer hover:shadow-md transition-shadow ${
-        isSelected ? "ring-2 ring-primary" : ""
+    <div 
+      className={`email-card glass-card p-6 cursor-pointer group transition-all duration-300 ${
+        isSelected ? "ring-2 ring-primary shadow-xl scale-[1.02]" : ""
       }`}
       onClick={onClick}
       data-testid={`email-card-${email.id}`}
     >
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-              <span className="text-primary font-medium" data-testid={`sender-initials-${email.id}`}>
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <span className="text-white font-bold text-lg" data-testid={`sender-initials-${email.id}`}>
                 {getSenderInitials(email.sender)}
               </span>
             </div>
-            <div>
-              <p className="font-medium" data-testid={`sender-${email.id}`}>
-                {email.sender}
-              </p>
-              <p className="text-sm text-muted-foreground" data-testid={`timestamp-${email.id}`}>
-                {format(new Date(email.receivedAt), "MMM d, h:mm a")}
-              </p>
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+              <i className="fas fa-envelope text-white text-xs"></i>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge 
-              className={`text-xs font-medium ${getPriorityBadgeClass(email.priority)}`}
-              data-testid={`priority-badge-${email.id}`}
-            >
-              {email.priority.toUpperCase()}
-            </Badge>
-            <Badge 
-              className={`text-xs font-medium ${getSentimentBadgeClass(email.sentiment)}`}
-              data-testid={`sentiment-badge-${email.id}`}
-            >
-              {email.sentiment}
-            </Badge>
+          <div className="flex-1">
+            <p className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors" data-testid={`sender-${email.id}`}>
+              {email.sender.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            </p>
+            <p className="text-sm text-muted-foreground font-medium" data-testid={`sender-email-${email.id}`}>
+              {email.sender}
+            </p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1" data-testid={`timestamp-${email.id}`}>
+              <i className="fas fa-clock"></i>
+              {format(new Date(email.receivedAt), "MMM d, h:mm a")}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Badge 
+            className={`text-xs font-bold px-3 py-1.5 rounded-full ${getPriorityBadgeClass(email.priority)} shadow-md`}
+            data-testid={`priority-badge-${email.id}`}
+          >
+            <i className={`fas ${
+              email.priority === 'urgent' ? 'fa-exclamation-triangle' : 'fa-info-circle'
+            } mr-1`}></i>
+            {email.priority.toUpperCase()}
+          </Badge>
+          <Badge 
+            className={`text-xs font-bold px-3 py-1.5 rounded-full ${getSentimentBadgeClass(email.sentiment)} shadow-md`}
+            data-testid={`sentiment-badge-${email.id}`}
+          >
+            <i className={`fas ${
+              email.sentiment === 'positive' ? 'fa-smile' : 
+              email.sentiment === 'negative' ? 'fa-frown' : 'fa-meh'
+            } mr-1`}></i>
+            {email.sentiment}
+          </Badge>
+        </div>
+      </div>
+        
+        <div className="mb-4">
+          <h4 className="font-bold text-xl mb-3 group-hover:gradient-text-static transition-all duration-300" data-testid={`subject-${email.id}`}>
+            {email.subject}
+          </h4>
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border-l-4 border-primary">
+            <p className="text-gray-700 text-sm leading-relaxed line-clamp-3" data-testid={`preview-${email.id}`}>
+              {email.body.slice(0, 200)}...
+            </p>
           </div>
         </div>
         
-        <h4 className="font-semibold mb-2" data-testid={`subject-${email.id}`}>
-          {email.subject}
-        </h4>
-        <p className="text-muted-foreground text-sm mb-4 line-clamp-2" data-testid={`preview-${email.id}`}>
-          {email.body.slice(0, 150)}...
-        </p>
-        
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-4 text-muted-foreground">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6 text-sm">
             {extractPhoneNumbers(email.extractedInfo) && (
-              <span data-testid={`phone-${email.id}`}>
-                <i className="fas fa-phone mr-1"></i>
-                {extractPhoneNumbers(email.extractedInfo)}
-              </span>
+              <div className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-full" data-testid={`phone-${email.id}`}>
+                <i className="fas fa-phone text-blue-500"></i>
+                <span className="font-medium text-blue-700">{extractPhoneNumbers(email.extractedInfo)}</span>
+              </div>
             )}
-            <span data-testid={`category-${email.id}`}>
-              <i className="fas fa-tag mr-1"></i>
-              {email.category || "General Inquiry"}
-            </span>
+            <div className="flex items-center gap-2 bg-purple-50 px-3 py-2 rounded-full" data-testid={`category-${email.id}`}>
+              <i className="fas fa-tag text-purple-500"></i>
+              <span className="font-medium text-purple-700">{email.category || "General Inquiry"}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          
+          <div className="flex items-center gap-3">
             {email.hasResponse ? (
-              <span className="text-xs text-green-500" data-testid={`response-status-${email.id}`}>
-                <i className="fas fa-check mr-1"></i>Response Generated
-              </span>
+              <div className="flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full" data-testid={`response-status-${email.id}`}>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-semibold text-green-700">Response Ready</span>
+                <i className="fas fa-check-circle text-green-500"></i>
+              </div>
             ) : (
-              <Button 
-                size="sm" 
+              <button 
                 onClick={handleGenerateResponse}
                 disabled={generateResponseMutation.isPending}
-                className="bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 text-xs font-semibold shadow-md border-0"
+                className="btn-gradient px-6 py-3 rounded-full text-sm font-bold shadow-lg transition-all duration-300 hover:shadow-xl disabled:opacity-70"
                 data-testid={`button-generate-response-${email.id}`}
               >
-                <i className={`fas ${generateResponseMutation.isPending ? 'fa-spinner fa-spin' : 'fa-robot'} mr-1`}></i>
-                {generateResponseMutation.isPending ? 'Generating...' : 'Generate Response'}
-              </Button>
+                <i className={`fas ${generateResponseMutation.isPending ? 'fa-spinner fa-spin' : 'fa-magic'} mr-2`}></i>
+                {generateResponseMutation.isPending ? 'Generating...' : 'Generate AI Response'}
+              </button>
             )}
           </div>
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
