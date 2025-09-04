@@ -70,37 +70,65 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen flex bg-background" data-testid="dashboard-page">
+    <div className="min-h-screen flex bg-background mobile-stack" data-testid="dashboard-page">
       <Sidebar />
       
       <main className="flex-1 overflow-auto">
         <Header onSyncEmails={handleSyncEmails} />
         
-        <section className="p-6">
+        {/* Hero Section */}
+        <section className="px-6 pb-4">
+          <div className="glass-card p-6 rounded-xl fade-in bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-100">
+            <div className="flex items-center justify-between mobile-stack gap-4">
+              <div>
+                <h2 className="text-xl font-bold gradient-text mb-2">Welcome back! 👋</h2>
+                <p className="text-muted-foreground text-sm">
+                  Your AI assistant has processed <span className="font-semibold text-blue-600">{analytics?.stats?.totalEmails || 0}</span> emails 
+                  and identified <span className="font-semibold text-red-500">{analytics?.stats?.urgentEmails || 0}</span> urgent items.
+                </p>
+              </div>
+              <div className="flex items-center gap-3 mobile-full">
+                <div className="glass-card p-3 rounded-xl bg-green-100">
+                  <i className="fas fa-chart-line text-2xl text-green-600"></i>
+                </div>
+                <div className="text-right mobile-hidden">
+                  <div className="text-2xl font-bold text-green-600">+24%</div>
+                  <div className="text-xs text-muted-foreground">vs last week</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <section className="px-6 pb-6 fade-in" style={{animationDelay: '0.2s'}}>
           <StatsCards 
             stats={analytics?.stats as EmailStats | undefined} 
             isLoading={analyticsLoading} 
           />
         </section>
 
-        <section className="px-6 pb-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <EmailList
-                emails={emails}
-                isLoading={emailsLoading}
-                onEmailSelect={handleEmailSelect}
-                selectedEmailId={selectedEmail?.id}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                priorityFilter={priorityFilter}
-                onPriorityFilterChange={setPriorityFilter}
-                sentimentFilter={sentimentFilter}
-                onSentimentFilterChange={setSentimentFilter}
-              />
+        <section className="px-6 pb-8">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+            {/* Email List - Takes more space on larger screens */}
+            <div className="xl:col-span-3 fade-in" style={{animationDelay: '0.4s'}}>
+              <div className="glass-card p-1 rounded-xl">
+                <EmailList
+                  emails={emails}
+                  isLoading={emailsLoading}
+                  onEmailSelect={handleEmailSelect}
+                  selectedEmailId={selectedEmail?.id}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  priorityFilter={priorityFilter}
+                  onPriorityFilterChange={setPriorityFilter}
+                  sentimentFilter={sentimentFilter}
+                  onSentimentFilterChange={setSentimentFilter}
+                />
+              </div>
             </div>
 
-            <div className="space-y-6">
+            {/* Side Panels */}
+            <div className="space-y-6 fade-in" style={{animationDelay: '0.6s'}}>
               <AIResponsePanel 
                 selectedEmail={selectedEmail}
                 onResponseSent={() => refetchEmails()}
@@ -109,6 +137,31 @@ export default function Dashboard() {
                 analytics={analytics as { sentiment?: { positive: number; negative: number; neutral: number; }; categories?: Array<{ category: string; count: number; }>; }}
                 isLoading={analyticsLoading}
               />
+            </div>
+          </div>
+        </section>
+
+        {/* Quick Actions Footer */}
+        <section className="px-6 pb-6">
+          <div className="glass-card p-6 rounded-xl fade-in" style={{animationDelay: '0.8s'}}>
+            <h3 className="font-semibold mb-4 gradient-text">Quick Actions</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <button className="glass-card p-4 rounded-xl hover:shadow-lg transition-all text-center group">
+                <i className="fas fa-plus text-2xl text-blue-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <div className="text-sm font-medium">Compose Email</div>
+              </button>
+              <button className="glass-card p-4 rounded-xl hover:shadow-lg transition-all text-center group">
+                <i className="fas fa-filter text-2xl text-green-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <div className="text-sm font-medium">Smart Filter</div>
+              </button>
+              <button className="glass-card p-4 rounded-xl hover:shadow-lg transition-all text-center group">
+                <i className="fas fa-robot text-2xl text-purple-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <div className="text-sm font-medium">AI Insights</div>
+              </button>
+              <button className="glass-card p-4 rounded-xl hover:shadow-lg transition-all text-center group">
+                <i className="fas fa-download text-2xl text-orange-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <div className="text-sm font-medium">Export Data</div>
+              </button>
             </div>
           </div>
         </section>

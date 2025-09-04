@@ -18,28 +18,42 @@ export default function Header({ onSyncEmails }: HeaderProps) {
   };
 
   return (
-    <header className="bg-card border-b border-border p-6" data-testid="header">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold" data-testid="page-title">Email Management Dashboard</h2>
-          <p className="text-muted-foreground" data-testid="page-subtitle">AI-powered email analysis and response generation</p>
+    <header className="glass-card border-b border-border p-6 m-4 rounded-xl fade-in sticky top-4 z-40" data-testid="header">
+      <div className="flex items-center justify-between mobile-stack gap-4">
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold gradient-text mb-2" data-testid="page-title">
+            Email Management Dashboard
+          </h1>
+          <p className="text-muted-foreground flex items-center gap-2" data-testid="page-subtitle">
+            <i className="fas fa-robot text-blue-500"></i>
+            AI-powered email analysis and response generation
+          </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 mobile-full mobile-stack">
           <Button 
             onClick={handleSync} 
             disabled={isSyncing}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="btn-gradient px-6 py-2 rounded-xl font-semibold shadow-lg"
             data-testid="button-sync-emails"
           >
-            <i className={`fas ${isSyncing ? 'fa-spinner fa-spin' : 'fa-sync-alt'} mr-2`}></i>
+            <i className={`fas ${isSyncing ? 'fa-spinner fa-spin' : 'fa-sync-alt'} mr-2 text-sm`}></i>
             {isSyncing ? 'Syncing...' : 'Sync Emails'}
           </Button>
           <Button 
             variant="secondary"
-            className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            className="glass-card hover:shadow-lg transition-all p-3 rounded-xl"
             data-testid="button-user-menu"
           >
-            <i className="fas fa-user-circle text-xl"></i>
+            <i className="fas fa-user-circle text-2xl text-blue-500"></i>
+          </Button>
+          <Button 
+            variant="ghost"
+            className="glass-card hover:shadow-lg transition-all p-3 rounded-xl mobile-hidden"
+            data-testid="button-notifications"
+          >
+            <i className="fas fa-bell text-xl text-blue-500 relative">
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">3</span>
+            </i>
           </Button>
         </div>
       </div>

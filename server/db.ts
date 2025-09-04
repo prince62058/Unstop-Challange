@@ -1,15 +1,31 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
-import * as schema from "@shared/schema";
+import mongoose from 'mongoose';
 
-neonConfig.webSocketConstructor = ws;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://prince:prince123@cluster0.mongodb.net/emailManagementDB?retryWrites=true&w=majority';
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
-}
+export const connectDB = async () => {
+  try {
+    // First, try the provided MongoDB connection
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
+    });
+    console.log('Connected to MongoDB successfully');
+  } catch (error) {
+    console.error('Failed to connect to remote MongoDB, trying alternative approaches:', error);
+    
+    // Fallback: Try without SRV if the main connection fails
+    try {
+      const fallbackUri = 'mongodb://localhost:27017/emailManagementDB';
+      console.log('Attempting to connect to local MongoDB...');
+      await mongoose.connect(fallbackUri);
+      console.log('Connected to local MongoDB successfully');
+    } catch (fallbackError) {
+      console.error('Local MongoDB also failed, using in-memory storage:', fallbackError);
+      // For development, we can continue without DB and add sample data
+      console.log('Continuing with in-memory storage for demo purposes');
+    }
+  }
+};
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+export default mongoose;

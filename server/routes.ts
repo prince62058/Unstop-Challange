@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { emailService } from "./services/email";
-import { insertEmailSchema } from "@shared/schema";
+import { Email, EmailResponse, IEmail } from "@shared/schema";
 import { z } from "zod";
 
 const createEmailRequestSchema = z.object({
