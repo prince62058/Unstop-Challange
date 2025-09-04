@@ -39,13 +39,6 @@ export default function Header({ onSyncEmails }: HeaderProps) {
             <i className={`fas ${isSyncing ? 'fa-spinner fa-spin' : 'fa-sync-alt'} mr-2 text-sm`}></i>
             {isSyncing ? 'Syncing...' : 'Sync Emails'}
           </Button>
-          <Button 
-            variant="secondary"
-            className="glass-card hover:shadow-lg transition-all p-3 rounded-xl"
-            data-testid="button-user-menu"
-          >
-            <i className="fas fa-user-circle text-2xl text-blue-500"></i>
-          </Button>
         </div>
       </div>
     </header>
