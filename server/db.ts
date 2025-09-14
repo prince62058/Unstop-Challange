@@ -1,38 +1,42 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import { users, emails, emailResponses } from '../shared/schema.js';
+import mongoose from 'mongoose';
 
-let db: ReturnType<typeof drizzle> | null = null;
+let isConnected = false;
 
 export const connectDB = async () => {
   try {
-    const DATABASE_URL = process.env.DATABASE_URL;
+    const MONGODB_URI = process.env.MONGODB_URI || process.env.DATABASE_URL;
     
-    if (!DATABASE_URL) {
-      console.warn('DATABASE_URL not configured. App will run with sample data only.');
+    if (!MONGODB_URI) {
+      console.warn('MONGODB_URI not configured. App will run with sample data only.');
       return null;
     }
 
-    // Create postgres connection
-    const client = postgres(DATABASE_URL);
+    // Skip connection if already connected
+    if (isConnected) {
+      console.log('Using existing MongoDB connection');
+      return mongoose.connection;
+    }
+
+    // Connect to MongoDB
+    const connection = await mongoose.connect(MONGODB_URI, {
+      bufferCommands: false,
+    });
     
-    // Create drizzle instance
-    db = drizzle(client);
-    
-    console.log('Connected to PostgreSQL database successfully');
-    return db;
+    isConnected = true;
+    console.log('Connected to MongoDB database successfully');
+    return connection;
   } catch (error) {
     console.warn('Failed to connect to database, continuing with sample data:', error instanceof Error ? error.message : 'Unknown error');
+    isConnected = false;
     return null;
   }
 };
 
 export const getDB = () => {
-  if (!db) {
+  if (!isConnected || !mongoose.connection.readyState) {
     throw new Error('Database not available');
   }
-  return db;
+  return mongoose.connection;
 };
 
-export { users, emails, emailResponses };
-export default db;
+export default mongoose;

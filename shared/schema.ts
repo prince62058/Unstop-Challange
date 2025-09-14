@@ -1,82 +1,91 @@
-import { pgTable, varchar, text, timestamp, boolean, integer, serial } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
+import mongoose, { Schema, Document } from 'mongoose';
 
-// Users table
-export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  username: varchar('username', { length: 255 }).notNull().unique(),
-  password: varchar('password', { length: 255 }).notNull(),
-  emailAddress: varchar('email_address', { length: 255 }),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-// Emails table
-export const emails = pgTable('emails', {
-  id: serial('id').primaryKey(),
-  sender: varchar('sender', { length: 255 }).notNull(),
-  subject: text('subject').notNull(),
-  body: text('body').notNull(),
-  receivedAt: timestamp('received_at').notNull(),
-  priority: varchar('priority', { length: 10 }).notNull().$type<'urgent' | 'normal'>(),
-  sentiment: varchar('sentiment', { length: 10 }).notNull().$type<'positive' | 'negative' | 'neutral'>(),
-  category: varchar('category', { length: 100 }),
-  extractedInfo: text('extracted_info'), // JSON stored as text
-  isProcessed: boolean('is_processed').default(false).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-// Email responses table
-export const emailResponses = pgTable('email_responses', {
-  id: serial('id').primaryKey(),
-  emailId: integer('email_id').references(() => emails.id).notNull(),
-  generatedResponse: text('generated_response').notNull(),
-  isEdited: boolean('is_edited').default(false).notNull(),
-  finalResponse: text('final_response'),
-  sentAt: timestamp('sent_at'),
-  confidence: integer('confidence'), // 0-100
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-// Type exports for compatibility with existing code
-export type InsertUser = typeof users.$inferInsert;
-export type SelectUser = typeof users.$inferSelect;
-
-export type InsertEmail = typeof emails.$inferInsert;
-export type SelectEmail = typeof emails.$inferSelect;
-
-export type InsertEmailResponse = typeof emailResponses.$inferInsert;
-export type SelectEmailResponse = typeof emailResponses.$inferSelect;
-
-// Legacy interface compatibility - these maintain the same shape as Mongoose interfaces
-export interface IUser {
-  id?: number;
+// User Schema
+export interface IUser extends Document {
+  _id?: mongoose.Types.ObjectId;
+  id?: string;
   username: string;
   password: string;
-  emailAddress?: string | null;
-  createdAt?: Date;
+  emailAddress?: string;
+  createdAt: Date;
 }
 
-export interface IEmail {
-  id?: number;
+const userSchema = new Schema<IUser>({
+  username: { type: String, required: true, unique: true, maxlength: 255 },
+  password: { type: String, required: true, maxlength: 255 },
+  emailAddress: { type: String, maxlength: 255 },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Email Schema  
+export interface IEmail extends Document {
+  _id?: mongoose.Types.ObjectId;
+  id?: string;
   sender: string;
   subject: string;
   body: string;
   receivedAt: Date;
   priority: 'urgent' | 'normal';
   sentiment: 'positive' | 'negative' | 'neutral';
-  category?: string | null;
+  category?: string;
   extractedInfo?: any;
   isProcessed: boolean;
-  createdAt?: Date;
+  createdAt: Date;
 }
 
-export interface IEmailResponse {
-  id?: number;
-  emailId: number;
+const emailSchema = new Schema<IEmail>({
+  sender: { type: String, required: true, maxlength: 255 },
+  subject: { type: String, required: true },
+  body: { type: String, required: true },
+  receivedAt: { type: Date, required: true },
+  priority: { type: String, enum: ['urgent', 'normal'], required: true },
+  sentiment: { type: String, enum: ['positive', 'negative', 'neutral'], required: true },
+  category: { type: String, maxlength: 100 },
+  extractedInfo: { type: Schema.Types.Mixed },
+  isProcessed: { type: Boolean, default: false, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Email Response Schema
+export interface IEmailResponse extends Document {
+  _id?: mongoose.Types.ObjectId;
+  id?: string;
+  emailId: mongoose.Types.ObjectId | string;
   generatedResponse: string;
   isEdited: boolean;
-  finalResponse?: string | null;
-  sentAt?: Date | null;
-  confidence?: number | null;
-  createdAt?: Date;
+  finalResponse?: string;
+  sentAt?: Date;
+  confidence?: number;
+  createdAt: Date;
 }
+
+const emailResponseSchema = new Schema<IEmailResponse>({
+  emailId: { type: Schema.Types.ObjectId, ref: 'Email', required: true },
+  generatedResponse: { type: String, required: true },
+  isEdited: { type: Boolean, default: false, required: true },
+  finalResponse: { type: String },
+  sentAt: { type: Date },
+  confidence: { type: Number, min: 0, max: 100 },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Create and export models
+export const User = mongoose.model<IUser>('User', userSchema);
+export const Email = mongoose.model<IEmail>('Email', emailSchema);
+export const EmailResponse = mongoose.model<IEmailResponse>('EmailResponse', emailResponseSchema);
+
+// Export schemas for direct access if needed
+export const users = User;
+export const emails = Email; 
+export const emailResponses = EmailResponse;
+
+// Type exports for compatibility with existing code
+export type InsertUser = Partial<IUser>;
+export type SelectUser = IUser;
+
+export type InsertEmail = Partial<IEmail>;
+export type SelectEmail = IEmail;
+
+export type InsertEmailResponse = Partial<IEmailResponse>;
+export type SelectEmailResponse = IEmailResponse;
+
