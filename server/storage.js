@@ -1,50 +1,41 @@
 import { 
-  User, Email, EmailResponse,
-  type IUser, type IEmail, type IEmailResponse,
-  type InsertUser, type InsertEmail, type InsertEmailResponse
-} from "@shared/schema";
+  User, Email, EmailResponse
+} from "../shared/schema.js";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
-export interface IStorage {
-  // User operations
-  getUser(id: string): Promise<IUser | undefined>;
-  getUserByUsername(username: string): Promise<IUser | undefined>;
-  createUser(user: InsertUser): Promise<IUser>;
+/**
+ * @typedef {Object} EmailStats
+ * @property {number} totalEmails
+ * @property {number} urgentEmails  
+ * @property {number} resolvedEmails
+ * @property {number} pendingEmails
+ */
 
-  // Email operations
-  getEmails(limit?: number, offset?: number): Promise<IEmail[]>;
-  getEmailById(id: string): Promise<IEmail | undefined>;
-  createEmail(email: InsertEmail): Promise<IEmail>;
-  updateEmail(id: string, updates: Partial<InsertEmail>): Promise<IEmail>;
-  getEmailsByPriority(priority: "urgent" | "normal"): Promise<IEmail[]>;
-  getEmailsBySentiment(sentiment: "positive" | "negative" | "neutral"): Promise<IEmail[]>;
-  searchEmails(query: string): Promise<IEmail[]>;
+/**
+ * @typedef {Object} SentimentDistribution
+ * @property {number} positive
+ * @property {number} negative
+ * @property {number} neutral
+ */
 
-  // Email response operations
-  getResponsesByEmailId(emailId: string): Promise<IEmailResponse[]>;
-  createEmailResponse(response: InsertEmailResponse): Promise<IEmailResponse>;
-  updateEmailResponse(id: string, updates: Partial<InsertEmailResponse>): Promise<IEmailResponse>;
+/**
+ * @typedef {Object} CategoryBreakdown
+ * @property {string|null} category
+ * @property {number} count
+ */
 
-  // Analytics
-  getEmailStats(): Promise<{
-    totalEmails: number;
-    urgentEmails: number;
-    resolvedEmails: number;
-    pendingEmails: number;
-  }>;
-  getSentimentDistribution(): Promise<{
-    positive: number;
-    negative: number;
-    neutral: number;
-  }>;
-  getCategoryBreakdown(): Promise<Array<{ category: string | null; count: number }>>;
-}
+export class DatabaseStorage {
+  constructor() {
+    this.mockResponses = new Map();
+  }
 
-export class DatabaseStorage implements IStorage {
-  private mockResponses = new Map<string, IEmailResponse>();
-
-  async getUser(id: string): Promise<IUser | undefined> {
+  /**
+   * Get user by ID
+   * @param {string} id 
+   * @returns {Promise<Object|undefined>}
+   */
+  async getUser(id) {
     try {
       const user = await User.findById(id);
       return user || undefined;
@@ -54,7 +45,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getUserByUsername(username: string): Promise<IUser | undefined> {
+  /**
+   * Get user by username
+   * @param {string} username 
+   * @returns {Promise<Object|undefined>}
+   */
+  async getUserByUsername(username) {
     try {
       const user = await User.findOne({ username });
       return user || undefined;
@@ -64,7 +60,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async createUser(insertUser: InsertUser): Promise<IUser> {
+  /**
+   * Create a new user
+   * @param {Object} insertUser 
+   * @returns {Promise<Object>}
+   */
+  async createUser(insertUser) {
     // Hash password before saving
     if (insertUser.password) {
       insertUser.password = await bcrypt.hash(insertUser.password, 10);
@@ -73,7 +74,13 @@ export class DatabaseStorage implements IStorage {
     return await user.save();
   }
 
-  async getEmails(limit = 50, offset = 0): Promise<IEmail[]> {
+  /**
+   * Get emails with pagination
+   * @param {number} limit 
+   * @param {number} offset 
+   * @returns {Promise<Array>}
+   */
+  async getEmails(limit = 50, offset = 0) {
     try {
       const emailList = await Email.find()
         .sort({ receivedAt: -1 })
@@ -86,7 +93,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getEmailById(id: string): Promise<IEmail | undefined> {
+  /**
+   * Get email by ID
+   * @param {string} id 
+   * @returns {Promise<Object|undefined>}
+   */
+  async getEmailById(id) {
     try {
       const email = await Email.findById(id);
       return email || undefined;
@@ -96,7 +108,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async createEmail(emailData: InsertEmail): Promise<IEmail> {
+  /**
+   * Create a new email
+   * @param {Object} emailData 
+   * @returns {Promise<Object>}
+   */
+  async createEmail(emailData) {
     try {
       const email = new Email(emailData);
       return await email.save();
@@ -106,11 +123,17 @@ export class DatabaseStorage implements IStorage {
         id: Date.now(),
         ...emailData,
         createdAt: new Date()
-      } as IEmail;
+      };
     }
   }
 
-  async updateEmail(id: string, updates: Partial<InsertEmail>): Promise<IEmail> {
+  /**
+   * Update email
+   * @param {string} id 
+   * @param {Object} updates 
+   * @returns {Promise<Object>}
+   */
+  async updateEmail(id, updates) {
     try {
       const updatedEmail = await Email.findByIdAndUpdate(id, updates, { new: true });
       
@@ -125,11 +148,16 @@ export class DatabaseStorage implements IStorage {
       if (!existingEmail) {
         throw new Error(`Email with id ${id} not found`);
       }
-      return { ...existingEmail, ...updates } as IEmail;
+      return { ...existingEmail, ...updates };
     }
   }
 
-  async getEmailsByPriority(priority: "urgent" | "normal"): Promise<IEmail[]> {
+  /**
+   * Get emails by priority
+   * @param {"urgent"|"normal"} priority 
+   * @returns {Promise<Array>}
+   */
+  async getEmailsByPriority(priority) {
     try {
       return await Email.find({ priority })
         .sort({ receivedAt: -1 });
@@ -139,7 +167,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getEmailsBySentiment(sentiment: "positive" | "negative" | "neutral"): Promise<IEmail[]> {
+  /**
+   * Get emails by sentiment
+   * @param {"positive"|"negative"|"neutral"} sentiment 
+   * @returns {Promise<Array>}
+   */
+  async getEmailsBySentiment(sentiment) {
     try {
       return await Email.find({ sentiment })
         .sort({ receivedAt: -1 });
@@ -149,7 +182,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async searchEmails(query: string): Promise<IEmail[]> {
+  /**
+   * Search emails by query
+   * @param {string} query 
+   * @returns {Promise<Array>}
+   */
+  async searchEmails(query) {
     try {
       return await Email.find({
         $or: [
@@ -169,7 +207,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getResponsesByEmailId(emailId: string): Promise<IEmailResponse[]> {
+  /**
+   * Get responses by email ID
+   * @param {string} emailId 
+   * @returns {Promise<Array>}
+   */
+  async getResponsesByEmailId(emailId) {
     try {
       const responses = await EmailResponse.find({ emailId })
         .sort({ createdAt: -1 });
@@ -184,7 +227,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async createEmailResponse(responseData: InsertEmailResponse): Promise<IEmailResponse> {
+  /**
+   * Create email response
+   * @param {Object} responseData 
+   * @returns {Promise<Object>}
+   */
+  async createEmailResponse(responseData) {
     try {
       const response = new EmailResponse(responseData);
       const savedResponse = await response.save();
@@ -196,7 +244,7 @@ export class DatabaseStorage implements IStorage {
         id: Date.now(),
         ...responseData,
         createdAt: new Date()
-      } as IEmailResponse;
+      };
       
       if (!this.mockResponses) {
         this.mockResponses = new Map();
@@ -207,7 +255,13 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateEmailResponse(id: string, updates: Partial<InsertEmailResponse>): Promise<IEmailResponse> {
+  /**
+   * Update email response
+   * @param {string} id 
+   * @param {Object} updates 
+   * @returns {Promise<Object>}
+   */
+  async updateEmailResponse(id, updates) {
     try {
       const updatedResponse = await EmailResponse.findByIdAndUpdate(id, updates, { new: true });
       
@@ -223,10 +277,14 @@ export class DatabaseStorage implements IStorage {
         id: id,
         ...updates,
         createdAt: new Date()
-      } as IEmailResponse;
+      };
     }
   }
 
+  /**
+   * Get email statistics
+   * @returns {Promise<EmailStats>}
+   */
   async getEmailStats() {
     try {
       const totalEmails = await Email.countDocuments();
@@ -259,6 +317,10 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  /**
+   * Get sentiment distribution
+   * @returns {Promise<SentimentDistribution>}
+   */
   async getSentimentDistribution() {
     try {
       const results = await Email.aggregate([
@@ -293,6 +355,10 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  /**
+   * Get category breakdown
+   * @returns {Promise<Array<CategoryBreakdown>>}
+   */
   async getCategoryBreakdown() {
     try {
       const results = await Email.aggregate([
@@ -327,7 +393,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Sample data for demo purposes
-  private getSampleEmails(): IEmail[] {
+  getSampleEmails() {
     return [
       {
         id: 1,
@@ -341,7 +407,7 @@ export class DatabaseStorage implements IStorage {
         extractedInfo: null,
         isProcessed: false,
         createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000)
-      } as any,
+      },
       {
         id: 2,
         sender: "sarah.johnson@clientcompany.com",
@@ -354,7 +420,7 @@ export class DatabaseStorage implements IStorage {
         extractedInfo: null,
         isProcessed: true,
         createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000)
-      } as any,
+      },
       {
         id: 3,
         sender: "marketing@partner.com",
@@ -367,7 +433,7 @@ export class DatabaseStorage implements IStorage {
         extractedInfo: null,
         isProcessed: false,
         createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000)
-      } as any,
+      },
       {
         id: 4,
         sender: "billing@vendor.com",
@@ -380,7 +446,7 @@ export class DatabaseStorage implements IStorage {
         extractedInfo: null,
         isProcessed: false,
         createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000)
-      } as any,
+      },
       {
         id: 5,
         sender: "hr@company.com",
@@ -393,7 +459,7 @@ export class DatabaseStorage implements IStorage {
         extractedInfo: null,
         isProcessed: true,
         createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000)
-      } as IEmail
+      }
     ];
   }
 }

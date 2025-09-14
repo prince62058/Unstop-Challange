@@ -1,28 +1,36 @@
-import { storage } from "../storage";
-import { analyzeSentiment, analyzePriority, extractInformation, generateResponse } from "./openai";
-import type { InsertEmail, InsertEmailResponse } from "@shared/schema";
+import { storage } from "../storage.js";
+import { analyzeSentiment, analyzePriority, extractInformation, generateResponse } from "./openai.js";
 
-export interface ProcessedEmail {
-  id: string;
-  sender: string;
-  subject: string;
-  body: string;
-  receivedAt: Date;
-  priority: "urgent" | "normal";
-  sentiment: "positive" | "negative" | "neutral";
-  category: string;
-  extractedInfo: any;
-  hasResponse: boolean;
-  generatedResponse?: string;
-}
+/**
+ * @typedef {Object} ProcessedEmail
+ * @property {string} id
+ * @property {string} sender
+ * @property {string} subject
+ * @property {string} body
+ * @property {Date} receivedAt
+ * @property {"urgent"|"normal"} priority
+ * @property {"positive"|"negative"|"neutral"} sentiment
+ * @property {string} category
+ * @property {Object} extractedInfo
+ * @property {boolean} hasResponse
+ * @property {string} [generatedResponse]
+ */
 
 export class EmailService {
+  /**
+   * Process an incoming email with AI analysis
+   * @param {string} sender 
+   * @param {string} subject 
+   * @param {string} body 
+   * @param {Date} receivedAt 
+   * @returns {Promise<ProcessedEmail>}
+   */
   async processEmail(
-    sender: string,
-    subject: string,
-    body: string,
-    receivedAt: Date = new Date()
-  ): Promise<ProcessedEmail> {
+    sender,
+    subject,
+    body,
+    receivedAt = new Date()
+  ) {
     try {
       // Analyze sentiment and priority
       const [sentimentAnalysis, priorityAnalysis, extractedInfo] = await Promise.all([
@@ -32,7 +40,7 @@ export class EmailService {
       ]);
 
       // Create email record
-      const emailData: InsertEmail = {
+      const emailData = {
         sender,
         subject,
         body,
@@ -67,8 +75,8 @@ export class EmailService {
           extractedInfo
         );
 
-        const emailResponseData: InsertEmailResponse = {
-          emailId: email.id!,
+        const emailResponseData = {
+          emailId: email.id,
           generatedResponse: responseData.response,
           confidence: Math.round(responseData.confidence * 100),
           isEdited: false,
@@ -86,8 +94,8 @@ export class EmailService {
         subject: email.subject,
         body: email.body,
         receivedAt: email.receivedAt,
-        priority: email.priority as "urgent" | "normal",
-        sentiment: email.sentiment as "positive" | "negative" | "neutral",
+        priority: email.priority,
+        sentiment: email.sentiment,
         category: email.category || "General Inquiry",
         extractedInfo: email.extractedInfo,
         hasResponse: !!generatedResponse,
@@ -99,7 +107,12 @@ export class EmailService {
     }
   }
 
-  async generateResponseForEmail(emailId: string): Promise<string> {
+  /**
+   * Generate response for existing email
+   * @param {string} emailId 
+   * @returns {Promise<string>}
+   */
+  async generateResponseForEmail(emailId) {
     try {
       const email = await storage.getEmailById(emailId);
       if (!email) {
@@ -124,7 +137,7 @@ export class EmailService {
         email.extractedInfo
       );
 
-      const emailResponseData: InsertEmailResponse = {
+      const emailResponseData = {
         emailId: email.id || parseInt(emailId),
         generatedResponse: responseData.response,
         confidence: Math.round(responseData.confidence * 100),
@@ -154,14 +167,20 @@ Support Team`;
     }
   }
 
-  async sendResponse(emailId: string, finalResponse: string): Promise<void> {
+  /**
+   * Send response for an email
+   * @param {string} emailId 
+   * @param {string} finalResponse 
+   * @returns {Promise<void>}
+   */
+  async sendResponse(emailId, finalResponse) {
     const responses = await storage.getResponsesByEmailId(emailId);
     if (responses.length === 0) {
       throw new Error("No response found for this email");
     }
 
     const response = responses[0];
-    await storage.updateEmailResponse(response.id!.toString(), {
+    await storage.updateEmailResponse(response.id.toString(), {
       finalResponse,
       sentAt: new Date(),
       isEdited: finalResponse !== response.generatedResponse
@@ -172,7 +191,12 @@ Support Team`;
     console.log(`Response sent for email ${emailId}: ${finalResponse}`);
   }
 
-  async filterSupportEmails(emails: any[]): Promise<any[]> {
+  /**
+   * Filter emails for support-related content
+   * @param {Array} emails 
+   * @returns {Promise<Array>}
+   */
+  async filterSupportEmails(emails) {
     const supportKeywords = ["support", "query", "request", "help"];
     
     return emails.filter(email => {
@@ -181,7 +205,13 @@ Support Team`;
     });
   }
 
-  async getEmailsWithResponses(limit = 50, offset = 0): Promise<ProcessedEmail[]> {
+  /**
+   * Get emails with their responses
+   * @param {number} limit 
+   * @param {number} offset 
+   * @returns {Promise<Array<ProcessedEmail>>}
+   */
+  async getEmailsWithResponses(limit = 50, offset = 0) {
     try {
       const emails = await storage.getEmails(limit, offset);
       
@@ -194,8 +224,8 @@ Support Team`;
             subject: email.subject,
             body: email.body,
             receivedAt: email.receivedAt,
-            priority: email.priority as "urgent" | "normal",
-            sentiment: email.sentiment as "positive" | "negative" | "neutral",
+            priority: email.priority,
+            sentiment: email.sentiment,
             category: email.category || "General Inquiry",
             extractedInfo: email.extractedInfo,
             hasResponse: responses.length > 0,

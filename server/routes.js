@@ -1,8 +1,6 @@
-import type { Express } from "express";
-import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { emailService } from "./services/email";
-import { IEmail } from "@shared/schema";
+import { createServer } from "http";
+import { storage } from "./storage.js";
+import { emailService } from "./services/email.js";
 import { z } from "zod";
 
 const createEmailRequestSchema = z.object({
@@ -29,7 +27,12 @@ const searchEmailsSchema = z.object({
   offset: z.number().min(0).optional()
 });
 
-export async function registerRoutes(app: Express): Promise<Server> {
+/**
+ * Register API routes with Express app
+ * @param {Object} app Express application instance
+ * @returns {Promise<Object>} HTTP Server instance
+ */
+export async function registerRoutes(app) {
   // Get all emails with filters and search
   app.get("/api/emails", async (req, res) => {
     try {
@@ -38,11 +41,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let emails;
       
       if (query) {
-        emails = await storage.searchEmails(query as string);
+        emails = await storage.searchEmails(query);
       } else if (priority) {
-        emails = await storage.getEmailsByPriority(priority as "urgent" | "normal");
+        emails = await storage.getEmailsByPriority(priority);
       } else if (sentiment) {
-        emails = await storage.getEmailsBySentiment(sentiment as "positive" | "negative" | "neutral");
+        emails = await storage.getEmailsBySentiment(sentiment);
       } else {
         emails = await emailService.getEmailsWithResponses(Number(limit), Number(offset));
       }
@@ -179,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const processedEmails = await Promise.all(
-        emails.map(async (emailData: any) => {
+        emails.map(async (emailData) => {
           try {
             return await emailService.processEmail(
               emailData.sender,
@@ -218,8 +221,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sender: "john.doe@techcorp.com",
           subject: "🚨 Urgent: Server downtime issue",
           body: "Hi team, we're experiencing server downtime on production. This is affecting all our customers. Please prioritize this issue immediately. The error logs show database connection failures.",
-          priority: "urgent" as const,
-          sentiment: "negative" as const,
+          priority: "urgent",
+          sentiment: "negative",
           category: "Technical Issue",
           receivedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
           extractedInfo: JSON.stringify({
@@ -234,8 +237,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sender: "sarah.johnson@clientcompany.com",
           subject: "✨ Thank you for the excellent service!",
           body: "I wanted to reach out and express my gratitude for the outstanding support your team provided during our recent project. Everything went smoothly and exceeded our expectations.",
-          priority: "normal" as const,
-          sentiment: "positive" as const,
+          priority: "normal",
+          sentiment: "positive",
           category: "Customer Feedback",
           receivedAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
           extractedInfo: JSON.stringify({
@@ -250,8 +253,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sender: "marketing@partner.com",
           subject: "🤝 Partnership opportunity discussion",
           body: "Hello, we've been following your company's growth and would like to discuss potential partnership opportunities. We believe there's great synergy between our organizations.",
-          priority: "normal" as const,
-          sentiment: "neutral" as const,
+          priority: "normal",
+          sentiment: "neutral",
           category: "Business Development",
           receivedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
           extractedInfo: JSON.stringify({
@@ -266,8 +269,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sender: "billing@vendor.com",
           subject: "💸 Invoice #INV-2024-001 is overdue",
           body: "This is a reminder that invoice #INV-2024-001 for $2,500 is now 30 days overdue. Please arrange payment at your earliest convenience to avoid service disruption.",
-          priority: "urgent" as const,
-          sentiment: "negative" as const,
+          priority: "urgent",
+          sentiment: "negative",
           category: "Financial",
           receivedAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
           extractedInfo: JSON.stringify({
@@ -283,8 +286,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sender: "hr@company.com",
           subject: "🎉 Team building event next Friday",
           body: "Reminder: Our monthly team building event is scheduled for next Friday at 3 PM in the main conference room. Pizza will be provided! Please confirm your attendance.",
-          priority: "normal" as const,
-          sentiment: "positive" as const,
+          priority: "normal",
+          sentiment: "positive",
           category: "HR/Internal",
           receivedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
           extractedInfo: JSON.stringify({

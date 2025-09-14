@@ -2,6 +2,10 @@ import mongoose from 'mongoose';
 
 let isConnected = false;
 
+/**
+ * Connects to MongoDB database
+ * @returns {Promise<mongoose.Connection|null>} MongoDB connection or null if failed
+ */
 export const connectDB = async () => {
   try {
     const MONGODB_URI = process.env.MONGODB_URI || process.env.DATABASE_URL;
@@ -32,6 +36,11 @@ export const connectDB = async () => {
   }
 };
 
+/**
+ * Gets the current database connection
+ * @returns {mongoose.Connection} MongoDB connection
+ * @throws {Error} If database is not available
+ */
 export const getDB = () => {
   if (!isConnected || !mongoose.connection.readyState) {
     throw new Error('Database not available');

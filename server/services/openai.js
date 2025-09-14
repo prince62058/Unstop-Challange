@@ -5,33 +5,43 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
 });
 
-export interface SentimentAnalysis {
-  sentiment: "positive" | "negative" | "neutral";
-  confidence: number;
-  reasoning: string;
-}
+/**
+ * @typedef {Object} SentimentAnalysis
+ * @property {"positive"|"negative"|"neutral"} sentiment
+ * @property {number} confidence
+ * @property {string} reasoning
+ */
 
-export interface PriorityAnalysis {
-  priority: "urgent" | "normal";
-  confidence: number;
-  keywords: string[];
-}
+/**
+ * @typedef {Object} PriorityAnalysis
+ * @property {"urgent"|"normal"} priority
+ * @property {number} confidence
+ * @property {Array<string>} keywords
+ */
 
-export interface EmailInformation {
-  phoneNumbers: string[];
-  alternateEmails: string[];
-  category: string;
-  customerRequirements: string[];
-  sentimentIndicators: string[];
-}
+/**
+ * @typedef {Object} EmailInformation
+ * @property {Array<string>} phoneNumbers
+ * @property {Array<string>} alternateEmails
+ * @property {string} category
+ * @property {Array<string>} customerRequirements
+ * @property {Array<string>} sentimentIndicators
+ */
 
-export interface ResponseGeneration {
-  response: string;
-  tone: string;
-  confidence: number;
-}
+/**
+ * @typedef {Object} ResponseGeneration
+ * @property {string} response
+ * @property {string} tone
+ * @property {number} confidence
+ */
 
-export async function analyzeSentiment(emailBody: string, subject: string): Promise<SentimentAnalysis> {
+/**
+ * Analyze sentiment of email content
+ * @param {string} emailBody 
+ * @param {string} subject 
+ * @returns {Promise<SentimentAnalysis>}
+ */
+export async function analyzeSentiment(emailBody, subject) {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-5",
@@ -68,7 +78,13 @@ export async function analyzeSentiment(emailBody: string, subject: string): Prom
   }
 }
 
-export async function analyzePriority(emailBody: string, subject: string): Promise<PriorityAnalysis> {
+/**
+ * Analyze priority of email content
+ * @param {string} emailBody 
+ * @param {string} subject 
+ * @returns {Promise<PriorityAnalysis>}
+ */
+export async function analyzePriority(emailBody, subject) {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-5",
@@ -105,7 +121,14 @@ export async function analyzePriority(emailBody: string, subject: string): Promi
   }
 }
 
-export async function extractInformation(emailBody: string, subject: string, sender: string): Promise<EmailInformation> {
+/**
+ * Extract information from email content
+ * @param {string} emailBody 
+ * @param {string} subject 
+ * @param {string} sender 
+ * @returns {Promise<EmailInformation>}
+ */
+export async function extractInformation(emailBody, subject, sender) {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-5",
@@ -151,15 +174,24 @@ export async function extractInformation(emailBody: string, subject: string, sen
   }
 }
 
-// Generate contextual fallback responses when OpenAI API is not available
+/**
+ * Generate contextual fallback responses when OpenAI API is not available
+ * @param {string} emailBody 
+ * @param {string} subject 
+ * @param {string} sender 
+ * @param {string} sentiment 
+ * @param {string} priority 
+ * @param {Object} extractedInfo 
+ * @returns {ResponseGeneration}
+ */
 function generateContextualFallback(
-  emailBody: string, 
-  subject: string, 
-  sender: string,
-  sentiment: string,
-  priority: string,
-  extractedInfo: any
-): ResponseGeneration {
+  emailBody, 
+  subject, 
+  sender,
+  sentiment,
+  priority,
+  extractedInfo
+) {
   const lowerBody = emailBody.toLowerCase();
   const lowerSubject = subject.toLowerCase();
   
@@ -313,14 +345,24 @@ support@company.com`;
   };
 }
 
+/**
+ * Generate response for email
+ * @param {string} emailBody 
+ * @param {string} subject 
+ * @param {string} sender 
+ * @param {string} sentiment 
+ * @param {string} priority 
+ * @param {Object} extractedInfo 
+ * @returns {Promise<ResponseGeneration>}
+ */
 export async function generateResponse(
-  emailBody: string, 
-  subject: string, 
-  sender: string,
-  sentiment: string,
-  priority: string,
-  extractedInfo: any
-): Promise<ResponseGeneration> {
+  emailBody, 
+  subject, 
+  sender,
+  sentiment,
+  priority,
+  extractedInfo
+) {
   try {
     let toneInstruction = "professional and helpful";
     if (sentiment === "negative") {
