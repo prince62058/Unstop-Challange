@@ -25,10 +25,9 @@ export default function StatsCards({ stats, isLoading }) {
 
   if (!stats) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {[
           { title: "Total Emails", value: "--", icon: "fa-envelope", gradient: "gradient-primary", bgGradient: "from-blue-500/10 to-purple-500/10" },
-          { title: "Urgent Emails", value: "--", icon: "fa-exclamation-triangle", gradient: "gradient-danger", bgGradient: "from-red-500/10 to-pink-500/10" },
           { title: "Resolved", value: "--", icon: "fa-check-circle", gradient: "gradient-success", bgGradient: "from-green-500/10 to-emerald-500/10" },
           { title: "Pending", value: "--", icon: "fa-clock", gradient: "gradient-warning", bgGradient: "from-yellow-500/10 to-orange-500/10" }
         ].map((stat, index) => (
@@ -69,17 +68,6 @@ export default function StatsCards({ stats, isLoading }) {
       trend: "up"
     },
     {
-      title: "Urgent Emails",
-      value: stats.urgentEmails,
-      icon: "fa-exclamation-triangle",
-      gradient: "from-red-500 to-pink-600",
-      bgGradient: "from-red-500/10 to-pink-500/10",
-      change: "-5%",
-      changeColor: "text-emerald-500",
-      changeIcon: "fa-trending-down",
-      trend: "down"
-    },
-    {
       title: "Resolved",
       value: stats.resolvedEmails,
       icon: "fa-check-circle",
@@ -104,7 +92,7 @@ export default function StatsCards({ stats, isLoading }) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       {statsData.map((stat, index) => (
         <div key={index} 
              className={`stat-card glass-card p-6 bg-gradient-to-br ${stat.bgGradient} fade-in group cursor-pointer`} 
