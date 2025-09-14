@@ -1,0 +1,47 @@
+2025-09-14T17:23:55.223008022Z ==> Downloading cache...
+2025-09-14T17:23:55.225208245Z ==> Cloning from https://github.com/prince62058/Unstop-Challange
+2025-09-14T17:23:55.765895477Z ==> Checking out commit 10171ed192569ee59dc2489226430a9e9c086063 in branch main
+2025-09-14T17:24:08.117388168Z ==> Transferred 213MB in 8s. Extraction took 4s.
+2025-09-14T17:24:13.453709584Z ==> Using Node.js version 22.16.0 (default)
+2025-09-14T17:24:13.476985339Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2025-09-14T17:24:13.532334942Z ==> Running build command 'npm install; npm run build'...
+2025-09-14T17:24:14.640616042Z 
+2025-09-14T17:24:14.640626822Z up to date, audited 580 packages in 1s
+2025-09-14T17:24:14.640637062Z 
+2025-09-14T17:24:14.640667233Z 70 packages are looking for funding
+2025-09-14T17:24:14.640673133Z   run `npm fund` for details
+2025-09-14T17:24:14.658704746Z 
+2025-09-14T17:24:14.658718736Z 8 vulnerabilities (5 moderate, 3 high)
+2025-09-14T17:24:14.658721546Z 
+2025-09-14T17:24:14.658724466Z To address issues that do not require attention, run:
+2025-09-14T17:24:14.658726916Z   npm audit fix
+2025-09-14T17:24:14.658729116Z 
+2025-09-14T17:24:14.658731436Z To address all issues (including breaking changes), run:
+2025-09-14T17:24:14.658734107Z   npm audit fix --force
+2025-09-14T17:24:14.658736387Z 
+2025-09-14T17:24:14.658739076Z Run `npm audit` for details.
+2025-09-14T17:24:14.805283984Z 
+2025-09-14T17:24:14.805299865Z > rest-express@1.0.0 build
+2025-09-14T17:24:14.805302845Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-09-14T17:24:14.805305345Z 
+2025-09-14T17:24:14.992921747Z vite v5.4.19 building for production...
+2025-09-14T17:24:15.041682521Z transforming...
+2025-09-14T17:24:15.341105501Z Browserslist: browsers data (caniuse-lite) is 11 months old. Please run:
+2025-09-14T17:24:15.341122301Z   npx update-browserslist-db@latest
+2025-09-14T17:24:15.341126021Z   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+2025-09-14T17:24:17.908927935Z ✓ 2032 modules transformed.
+2025-09-14T17:24:18.197752877Z rendering chunks...
+2025-09-14T17:24:18.204720103Z computing gzip size...
+2025-09-14T17:24:18.216603676Z ../dist/public/index.html                   2.20 kB │ gzip:   0.86 kB
+2025-09-14T17:24:18.216617486Z ../dist/public/assets/index-DfEJ-c3D.css   81.90 kB │ gzip:  14.58 kB
+2025-09-14T17:24:18.216741428Z ../dist/public/assets/index-_kshkQ6O.js   392.05 kB │ gzip: 120.00 kB
+2025-09-14T17:24:18.216990173Z ✓ built in 3.20s
+2025-09-14T17:24:18.266556993Z ✘ [ERROR] No matching export in "server/db.js" for import "db"
+2025-09-14T17:24:18.266571564Z 
+2025-09-14T17:24:18.266574314Z     server/storage.ts:1:9:
+2025-09-14T17:24:18.266576804Z       1 │ import { db } from "./db.js";
+2025-09-14T17:24:18.266578994Z         ╵          ~~
+2025-09-14T17:24:18.266580594Z 
+2025-09-14T17:24:18.266723986Z 1 error
+2025-09-14T17:24:18.281836262Z ==> Build failed 😞
+2025-09-14T17:24:18.281847122Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys

@@ -1,4 +1,4 @@
-import { db } from "./db.js";
+import { db } from "./db";
 import { users, emails, emailResponses, type User, type InsertUser, type Email, type InsertEmail, type EmailResponse, type InsertEmailResponse } from "@shared/schema";
 import { eq, desc, ilike, or, count, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
@@ -25,6 +25,8 @@ import bcrypt from "bcrypt";
  */
 
 export class DatabaseStorage {
+  private mockResponses: Map<string, EmailResponse>;
+
   constructor() {
     this.mockResponses = new Map();
   }
