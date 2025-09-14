@@ -143,7 +143,7 @@ export default function StatsCards({ stats, isLoading }) {
           </div>
           
           {/* Subtle background pattern */}
-          <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0 opacity-5 pointer-events-none">
             <div className="absolute top-4 right-4 w-8 h-8 border-2 border-current rounded-full"></div>
             <div className="absolute bottom-4 left-4 w-4 h-4 border border-current rounded-full"></div>
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 border border-current rounded-full"></div>
