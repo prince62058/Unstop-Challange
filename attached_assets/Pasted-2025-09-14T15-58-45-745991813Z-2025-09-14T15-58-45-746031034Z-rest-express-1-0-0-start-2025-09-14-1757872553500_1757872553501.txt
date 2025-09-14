@@ -1,0 +1,50 @@
+2025-09-14T15:58:45.745991813Z 
+2025-09-14T15:58:45.746031034Z > rest-express@1.0.0 start
+2025-09-14T15:58:45.746035543Z > NODE_ENV=production node dist/index.js
+2025-09-14T15:58:45.746037514Z 
+2025-09-14T15:58:51.54212083Z MONGODB_URI not configured. App will run with sample data only.
+2025-09-14T15:58:51.649972835Z 3:58:51 PM [express] serving on port 10000
+2025-09-14T15:58:53.945836383Z ==> Your service is live 🎉
+2025-09-14T15:58:53.973682732Z ==> 
+2025-09-14T15:58:53.99883019Z ==> ///////////////////////////////////////////////////////////
+2025-09-14T15:58:54.025308639Z ==> 
+2025-09-14T15:58:54.050969367Z ==> Available at your primary URL https://unstop-challange.onrender.com
+2025-09-14T15:58:54.081302535Z ==> 
+2025-09-14T15:58:54.108348203Z ==> ///////////////////////////////////////////////////////////
+2025-09-14T16:03:59.746259941Z ==> Detected service running on port 10000
+2025-09-14T16:03:59.83348866Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2025-09-14T17:45:11.173108429Z ==> Deploying...
+2025-09-14T17:45:57.665419418Z         ^
+2025-09-14T17:45:57.665423178Z 
+2025-09-14T17:45:57.665449129Z Error: DATABASE_URL must be set. Did you forget to provision a database?
+2025-09-14T17:45:57.665455529Z     at file:///opt/render/project/src/dist/index.js:69:9
+2025-09-14T17:45:57.665459369Z     at ModuleJob.run (node:internal/modules/esm/module_job:274:25)
+2025-09-14T17:45:57.665463689Z     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+2025-09-14T17:45:57.665467499Z     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-09-14T17:45:57.665470849Z 
+2025-09-14T17:45:57.66547448Z Node.js v22.16.0
+2025-09-14T17:46:00.114469249Z ==> Exited with status 1
+2025-09-14T17:46:00.131164328Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2025-09-14T17:46:06.617499378Z ==> Running 'npm run start'
+2025-09-14T17:46:07.82091698Z 
+2025-09-14T17:46:07.820945131Z > rest-express@1.0.0 start
+2025-09-14T17:46:07.820951221Z > NODE_ENV=production node dist/index.js
+2025-09-14T17:46:07.820953731Z 
+2025-09-14T17:46:14.831759429Z ==> Running 'npm run start'
+2025-09-14T17:46:16.521928963Z 
+2025-09-14T17:46:16.521951473Z > rest-express@1.0.0 start
+2025-09-14T17:46:16.521955693Z > NODE_ENV=production node dist/index.js
+2025-09-14T17:46:16.521958063Z 
+2025-09-14T17:46:17.514911904Z file:///opt/render/project/src/dist/index.js:69
+2025-09-14T17:46:17.514942424Z   throw new Error(
+2025-09-14T17:46:17.514946705Z         ^
+2025-09-14T17:46:17.514950215Z 
+2025-09-14T17:46:17.514953745Z Error: DATABASE_URL must be set. Did you forget to provision a database?
+2025-09-14T17:46:17.514958315Z     at file:///opt/render/project/src/dist/index.js:69:9
+2025-09-14T17:46:17.514962135Z     at ModuleJob.run (node:internal/modules/esm/module_job:274:25)
+2025-09-14T17:46:17.514965845Z     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+2025-09-14T17:46:17.514969245Z     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-09-14T17:46:17.514972375Z 
+2025-09-14T17:46:17.514975675Z Node.js v22.16.0
+2025-09-14T17:46:22.32483249Z MONGODB_URI not configured. App will run with sample data only.
+2025-09-14T17:46:22.532515272Z 5:46:22 PM [express] serving on port 10000
