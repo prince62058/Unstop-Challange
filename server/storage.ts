@@ -1,10 +1,10 @@
 import { 
-  users, emails, emailResponses,
+  User, Email, EmailResponse,
   type IUser, type IEmail, type IEmailResponse,
   type InsertUser, type InsertEmail, type InsertEmailResponse
 } from "@shared/schema";
-import { getDB } from "./db.js";
-import { eq, desc, like, or, and, count, isNull, isNotNull, sql } from "drizzle-orm";
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 export interface IStorage {
   // User operations
@@ -46,9 +46,8 @@ export class DatabaseStorage implements IStorage {
 
   async getUser(id: string): Promise<IUser | undefined> {
     try {
-      const db = getDB();
-      const user = await db.select().from(users).where(eq(users.id, parseInt(id))).limit(1);
-      return user[0] || undefined;
+      const user = await User.findById(id);
+      return user || undefined;
     } catch (error) {
       console.error('Error fetching user:', error);
       return undefined;
@@ -57,9 +56,8 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<IUser | undefined> {
     try {
-      const db = getDB();
-      const user = await db.select().from(users).where(eq(users.username, username)).limit(1);
-      return user[0] || undefined;
+      const user = await User.findOne({ username });
+      return user || undefined;
     } catch (error) {
       console.error('Error fetching user by username:', error);
       return undefined;
@@ -67,19 +65,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<IUser> {
-    const db = getDB();
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
+    // Hash password before saving
+    if (insertUser.password) {
+      insertUser.password = await bcrypt.hash(insertUser.password, 10);
+    }
+    const user = new User(insertUser);
+    return await user.save();
   }
 
   async getEmails(limit = 50, offset = 0): Promise<IEmail[]> {
     try {
-      const db = getDB();
-      const emailList = await db.select()
-        .from(emails)
-        .orderBy(desc(emails.receivedAt))
+      const emailList = await Email.find()
+        .sort({ receivedAt: -1 })
         .limit(limit)
-        .offset(offset);
+        .skip(offset);
       return emailList;
     } catch (error) {
       console.log('Database unavailable, returning sample data');
@@ -89,9 +88,8 @@ export class DatabaseStorage implements IStorage {
 
   async getEmailById(id: string): Promise<IEmail | undefined> {
     try {
-      const db = getDB();
-      const email = await db.select().from(emails).where(eq(emails.id, parseInt(id))).limit(1);
-      return email[0] || undefined;
+      const email = await Email.findById(id);
+      return email || undefined;
     } catch (error) {
       console.log('Database unavailable, searching sample data');
       return this.getSampleEmails().find(email => email.id?.toString() === id);
@@ -100,9 +98,8 @@ export class DatabaseStorage implements IStorage {
 
   async createEmail(emailData: InsertEmail): Promise<IEmail> {
     try {
-      const db = getDB();
-      const [email] = await db.insert(emails).values(emailData).returning();
-      return email;
+      const email = new Email(emailData);
+      return await email.save();
     } catch (error) {
       console.log('Database unavailable, creating mock email');
       return {
@@ -115,11 +112,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateEmail(id: string, updates: Partial<InsertEmail>): Promise<IEmail> {
     try {
-      const db = getDB();
-      const [updatedEmail] = await db.update(emails)
-        .set(updates)
-        .where(eq(emails.id, parseInt(id)))
-        .returning();
+      const updatedEmail = await Email.findByIdAndUpdate(id, updates, { new: true });
       
       if (!updatedEmail) {
         throw new Error(`Email with id ${id} not found`);
@@ -138,11 +131,8 @@ export class DatabaseStorage implements IStorage {
 
   async getEmailsByPriority(priority: "urgent" | "normal"): Promise<IEmail[]> {
     try {
-      const db = getDB();
-      return await db.select()
-        .from(emails)
-        .where(eq(emails.priority, priority))
-        .orderBy(desc(emails.receivedAt));
+      return await Email.find({ priority })
+        .sort({ receivedAt: -1 });
     } catch (error) {
       console.log('Database unavailable, filtering sample data');
       return this.getSampleEmails().filter(email => email.priority === priority);
@@ -151,11 +141,8 @@ export class DatabaseStorage implements IStorage {
 
   async getEmailsBySentiment(sentiment: "positive" | "negative" | "neutral"): Promise<IEmail[]> {
     try {
-      const db = getDB();
-      return await db.select()
-        .from(emails)
-        .where(eq(emails.sentiment, sentiment))
-        .orderBy(desc(emails.receivedAt));
+      return await Email.find({ sentiment })
+        .sort({ receivedAt: -1 });
     } catch (error) {
       console.log('Database unavailable, filtering sample data');
       return this.getSampleEmails().filter(email => email.sentiment === sentiment);
@@ -164,17 +151,13 @@ export class DatabaseStorage implements IStorage {
 
   async searchEmails(query: string): Promise<IEmail[]> {
     try {
-      const db = getDB();
-      return await db.select()
-        .from(emails)
-        .where(
-          or(
-            like(emails.subject, `%${query}%`),
-            like(emails.body, `%${query}%`),
-            like(emails.sender, `%${query}%`)
-          )
-        )
-        .orderBy(desc(emails.receivedAt));
+      return await Email.find({
+        $or: [
+          { subject: { $regex: query, $options: 'i' } },
+          { body: { $regex: query, $options: 'i' } },
+          { sender: { $regex: query, $options: 'i' } }
+        ]
+      }).sort({ receivedAt: -1 });
     } catch (error) {
       console.log('Database unavailable, searching sample data');
       const lowerQuery = query.toLowerCase();
@@ -188,11 +171,8 @@ export class DatabaseStorage implements IStorage {
 
   async getResponsesByEmailId(emailId: string): Promise<IEmailResponse[]> {
     try {
-      const db = getDB();
-      const responses = await db.select()
-        .from(emailResponses)
-        .where(eq(emailResponses.emailId, parseInt(emailId)))
-        .orderBy(desc(emailResponses.createdAt));
+      const responses = await EmailResponse.find({ emailId })
+        .sort({ createdAt: -1 });
       return responses;
     } catch (error) {
       console.log('Database unavailable for responses, checking mock storage');
@@ -206,10 +186,10 @@ export class DatabaseStorage implements IStorage {
 
   async createEmailResponse(responseData: InsertEmailResponse): Promise<IEmailResponse> {
     try {
-      const db = getDB();
-      const [response] = await db.insert(emailResponses).values(responseData).returning();
+      const response = new EmailResponse(responseData);
+      const savedResponse = await response.save();
       console.log(`Email response saved to database: ${responseData.emailId}`);
-      return response;
+      return savedResponse;
     } catch (error) {
       console.log('Database unavailable, creating mock response');
       const mockResponse = {
@@ -221,7 +201,7 @@ export class DatabaseStorage implements IStorage {
       if (!this.mockResponses) {
         this.mockResponses = new Map();
       }
-      this.mockResponses.set(responseData.emailId.toString(), mockResponse);
+      this.mockResponses.set(responseData.emailId?.toString() || '', mockResponse);
       console.log(`Mock response created for email ${responseData.emailId}`);
       return mockResponse;
     }
@@ -229,11 +209,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateEmailResponse(id: string, updates: Partial<InsertEmailResponse>): Promise<IEmailResponse> {
     try {
-      const db = getDB();
-      const [updatedResponse] = await db.update(emailResponses)
-        .set(updates)
-        .where(eq(emailResponses.id, parseInt(id)))
-        .returning();
+      const updatedResponse = await EmailResponse.findByIdAndUpdate(id, updates, { new: true });
       
       if (!updatedResponse) {
         throw new Error(`EmailResponse with id ${id} not found`);
@@ -244,7 +220,7 @@ export class DatabaseStorage implements IStorage {
       console.log('Database unavailable, returning mock updated response');
       // For mock purposes, just return a basic response structure
       return {
-        id: parseInt(id),
+        id: id,
         ...updates,
         createdAt: new Date()
       } as IEmailResponse;
@@ -253,21 +229,12 @@ export class DatabaseStorage implements IStorage {
 
   async getEmailStats() {
     try {
-      const db = getDB();
-      
-      const totalEmailsResult = await db.select({ count: count() }).from(emails);
-      const totalEmails = totalEmailsResult[0]?.count || 0;
-      
-      const urgentEmailsResult = await db.select({ count: count() })
-        .from(emails)
-        .where(eq(emails.priority, 'urgent'));
-      const urgentEmails = urgentEmailsResult[0]?.count || 0;
+      const totalEmails = await Email.countDocuments();
+      const urgentEmails = await Email.countDocuments({ priority: 'urgent' });
       
       // Count resolved emails (those with sent responses)
-      const resolvedEmailsResult = await db.selectDistinct({ emailId: emailResponses.emailId })
-        .from(emailResponses)
-        .where(isNotNull(emailResponses.sentAt));
-      const resolvedEmails = resolvedEmailsResult.length;
+      const resolvedEmailIds = await EmailResponse.distinct('emailId', { sentAt: { $ne: null } });
+      const resolvedEmails = resolvedEmailIds.length;
       
       const pendingEmails = totalEmails - resolvedEmails;
 
@@ -294,14 +261,14 @@ export class DatabaseStorage implements IStorage {
 
   async getSentimentDistribution() {
     try {
-      const db = getDB();
-      
-      const results = await db.select({
-        sentiment: emails.sentiment,
-        count: count()
-      })
-      .from(emails)
-      .groupBy(emails.sentiment);
+      const results = await Email.aggregate([
+        {
+          $group: {
+            _id: '$sentiment',
+            count: { $sum: 1 }
+          }
+        }
+      ]);
 
       const distribution = { positive: 0, negative: 0, neutral: 0 };
       const total = results.reduce((sum, item) => sum + item.count, 0);
@@ -309,9 +276,9 @@ export class DatabaseStorage implements IStorage {
       if (total > 0) {
         results.forEach(item => {
           const percentage = Math.round((item.count / total) * 100);
-          if (item.sentiment === 'positive') distribution.positive = percentage;
-          else if (item.sentiment === 'negative') distribution.negative = percentage;
-          else if (item.sentiment === 'neutral') distribution.neutral = percentage;
+          if (item._id === 'positive') distribution.positive = percentage;
+          else if (item._id === 'negative') distribution.negative = percentage;
+          else if (item._id === 'neutral') distribution.neutral = percentage;
         });
       }
 
@@ -328,19 +295,23 @@ export class DatabaseStorage implements IStorage {
 
   async getCategoryBreakdown() {
     try {
-      const db = getDB();
-      
-      const results = await db.select({
-        category: emails.category,
-        count: count()
-      })
-      .from(emails)
-      .where(isNotNull(emails.category))
-      .groupBy(emails.category)
-      .orderBy(desc(count()));
+      const results = await Email.aggregate([
+        {
+          $match: { category: { $ne: null } }
+        },
+        {
+          $group: {
+            _id: '$category',
+            count: { $sum: 1 }
+          }
+        },
+        {
+          $sort: { count: -1 }
+        }
+      ]);
 
       return results.map(result => ({
-        category: result.category,
+        category: result._id,
         count: result.count
       }));
     } catch (error) {
@@ -370,7 +341,7 @@ export class DatabaseStorage implements IStorage {
         extractedInfo: null,
         isProcessed: false,
         createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000)
-      } as IEmail,
+      } as any,
       {
         id: 2,
         sender: "sarah.johnson@clientcompany.com",
@@ -383,7 +354,7 @@ export class DatabaseStorage implements IStorage {
         extractedInfo: null,
         isProcessed: true,
         createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000)
-      } as IEmail,
+      } as any,
       {
         id: 3,
         sender: "marketing@partner.com",
@@ -396,7 +367,7 @@ export class DatabaseStorage implements IStorage {
         extractedInfo: null,
         isProcessed: false,
         createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000)
-      } as IEmail,
+      } as any,
       {
         id: 4,
         sender: "billing@vendor.com",
@@ -409,7 +380,7 @@ export class DatabaseStorage implements IStorage {
         extractedInfo: null,
         isProcessed: false,
         createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000)
-      } as IEmail,
+      } as any,
       {
         id: 5,
         sender: "hr@company.com",

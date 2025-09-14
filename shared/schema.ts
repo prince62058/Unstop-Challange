@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 // User Schema
 export interface IUser extends Document {
-  _id?: mongoose.Types.ObjectId;
+  _id: mongoose.Types.ObjectId;
   id?: string;
   username: string;
   password: string;
@@ -19,7 +19,7 @@ const userSchema = new Schema<IUser>({
 
 // Email Schema  
 export interface IEmail extends Document {
-  _id?: mongoose.Types.ObjectId;
+  _id: mongoose.Types.ObjectId;
   id?: string;
   sender: string;
   subject: string;
@@ -48,7 +48,7 @@ const emailSchema = new Schema<IEmail>({
 
 // Email Response Schema
 export interface IEmailResponse extends Document {
-  _id?: mongoose.Types.ObjectId;
+  _id: mongoose.Types.ObjectId;
   id?: string;
   emailId: mongoose.Types.ObjectId | string;
   generatedResponse: string;
