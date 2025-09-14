@@ -38,8 +38,12 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Database is already connected via db.js
-  console.log("PostgreSQL database connected via Drizzle ORM");
+  // Check if database is available
+  if (db) {
+    console.log("PostgreSQL database connected via Drizzle ORM");
+  } else {
+    console.log("Running without database - using sample data only");
+  }
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
