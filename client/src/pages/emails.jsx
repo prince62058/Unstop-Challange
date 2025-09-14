@@ -3,7 +3,7 @@ import { useEmails } from "@/hooks/use-emails";
 import EmailCard from "@/components/dashboard/email-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "wouter";
+import PageLayout from "@/components/layout/page-layout";
 
 export default function Emails() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,25 +23,18 @@ export default function Emails() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3 mb-3">
-            <Link href="/">
-              <Button variant="ghost" className="flex items-center gap-2 hover:bg-accent">
-                <i className="fas fa-arrow-left"></i>
-                Back to Dashboard
-              </Button>
-            </Link>
+    <PageLayout>
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold gradient-text mb-2">
+              Email Management
+            </h1>
+            <p className="text-muted-foreground">
+              View and manage all incoming emails
+            </p>
           </div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">
-            Email Management
-          </h1>
-          <p className="text-muted-foreground">
-            View and manage all incoming emails
-          </p>
         </div>
-      </div>
 
       {/* Filters */}
       <div className="flex gap-4 items-center">
@@ -84,7 +77,8 @@ export default function Emails() {
             />
           ))
         )}
+        </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }
