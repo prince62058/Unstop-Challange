@@ -210,12 +210,53 @@ export async function registerRoutes(app) {
     }
   });
 
-  // Sync emails endpoint - populates database with sample data
+  // Sync emails endpoint - syncs from Gmail or uses sample data
   app.post("/api/emails/sync", async (req, res) => {
     try {
       console.log("Starting email sync...");
       
-      // Sample email data to populate the database
+      // Try to sync from Gmail first
+      try {
+        const { gmailService } = await import("../services/gmail.js");
+        const isGmailConnected = await gmailService.isConnected();
+        
+        if (isGmailConnected) {
+          console.log("Gmail connected, syncing real emails...");
+          const gmailEmails = await gmailService.fetchEmails(50);
+          
+          let synced = 0;
+          for (const email of gmailEmails) {
+            try {
+              await storage.createEmail({
+                sender: email.sender,
+                subject: email.subject,
+                body: email.body,
+                receivedAt: email.receivedAt,
+                priority: email.importance === 'high' ? 'urgent' : 'normal',
+                sentiment: 'neutral', // Will be analyzed by AI later
+                category: null,
+                extractedInfo: null,
+                isProcessed: false
+              });
+              console.log(`Synced email: ${email.subject}`);
+              synced++;
+            } catch (error) {
+              console.error(`Failed to sync email: ${email.subject}`, error);
+            }
+          }
+          
+          return res.json({
+            success: true,
+            message: `Successfully synced ${synced} emails from Gmail`,
+            count: synced,
+            source: 'gmail'
+          });
+        }
+      } catch (error) {
+        console.log("Gmail sync failed, falling back to sample data:", error.message);
+      }
+      
+      // Fallback to sample email data if Gmail is not available
       const sampleEmails = [
         {
           sender: "john.doe@techcorp.com",
