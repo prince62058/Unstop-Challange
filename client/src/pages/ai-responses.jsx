@@ -4,30 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
 
-interface ProcessedEmail {
-  id: string;
-  sender: string;
-  subject: string;
-  body: string;
-  receivedAt: Date;
-  priority: "urgent" | "normal";
-  sentiment: "positive" | "negative" | "neutral";
-  category: string;
-  extractedInfo: any;
-  hasResponse: boolean;
-  generatedResponse?: string;
-}
-
 export default function AIResponses() {
   const { 
     data: emails = [], 
     isLoading: emailsLoading 
-  } = useEmails() as { data: ProcessedEmail[]; isLoading: boolean };
+  } = useEmails();
 
   // Filter emails that have AI responses
   const emailsWithResponses = emails.filter(email => email.hasResponse && email.generatedResponse);
 
-  const handleSendResponse = async (emailId: string, response: string) => {
+  const handleSendResponse = async (emailId, response) => {
     try {
       const result = await fetch(`/api/emails/${emailId}/send-response`, {
         method: 'POST',
@@ -130,7 +116,7 @@ export default function AIResponses() {
                 
                 <div className="flex gap-2 pt-2">
                   <Button 
-                    onClick={() => handleSendResponse(email.id, email.generatedResponse!)}
+                    onClick={() => handleSendResponse(email.id, email.generatedResponse)}
                     className="btn-gradient"
                   >
                     <i className="fas fa-paper-plane mr-2"></i>

@@ -1,14 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-interface UseEmailsOptions {
-  query?: string;
-  priority?: "urgent" | "normal";
-  sentiment?: "positive" | "negative" | "neutral";
-  limit?: number;
-  offset?: number;
-}
-
-export function useEmails(options: UseEmailsOptions = {}) {
+export function useEmails(options = {}) {
   const { query, priority, sentiment, limit = 50, offset = 0 } = options;
   
   const searchParams = new URLSearchParams();
@@ -27,7 +19,7 @@ export function useEmails(options: UseEmailsOptions = {}) {
   });
 }
 
-export function useEmail(emailId: string | undefined) {
+export function useEmail(emailId) {
   return useQuery({
     queryKey: [`/api/emails/${emailId}`],
     enabled: !!emailId,

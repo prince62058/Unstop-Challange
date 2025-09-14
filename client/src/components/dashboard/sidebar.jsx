@@ -5,7 +5,7 @@ export default function Sidebar() {
   const [location] = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const isActive = (path: string) => location === path;
+  const isActive = (path) => location === path;
 
   const navItems = [
     { path: "/", icon: "fa-home", label: "Dashboard", badge: null },

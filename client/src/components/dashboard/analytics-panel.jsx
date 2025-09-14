@@ -3,19 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface AnalyticsPanelProps {
-  analytics?: {
-    sentiment?: {
-      positive: number;
-      negative: number;
-      neutral: number;
-    };
-    categories?: Array<{ category: string; count: number }>;
-  };
-  isLoading: boolean;
-}
-
-export default function AnalyticsPanel({ analytics, isLoading }: AnalyticsPanelProps) {
+export default function AnalyticsPanel({ analytics, isLoading }) {
   if (isLoading) {
     return (
       <div className="space-y-6">

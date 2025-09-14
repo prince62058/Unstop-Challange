@@ -1,16 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface StatsCardsProps {
-  stats?: {
-    totalEmails: number;
-    urgentEmails: number;
-    resolvedEmails: number;
-    pendingEmails: number;
-  };
-  isLoading: boolean;
-}
-
-export default function StatsCards({ stats, isLoading }: StatsCardsProps) {
+export default function StatsCards({ stats, isLoading }) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

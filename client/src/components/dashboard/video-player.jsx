@@ -1,16 +1,10 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
-interface VideoPlayerProps {
-  videoSrc: string;
-  className?: string;
-}
-
-export default function VideoPlayer({ videoSrc, className = "" }: VideoPlayerProps) {
+export default function VideoPlayer({ videoSrc, className = "" }) {
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef(null);
 
   // Auto-play when component mounts
   const handleVideoLoad = () => {

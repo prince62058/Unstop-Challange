@@ -5,24 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "wouter";
 
-interface ProcessedEmail {
-  id: string;
-  sender: string;
-  subject: string;
-  body: string;
-  receivedAt: Date;
-  priority: "urgent" | "normal";
-  sentiment: "positive" | "negative" | "neutral";
-  category: string;
-  extractedInfo: any;
-  hasResponse: boolean;
-  generatedResponse?: string;
-}
-
 export default function Emails() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [priorityFilter, setPriorityFilter] = useState<"all" | "urgent" | "normal">("all");
-  const [selectedEmail, setSelectedEmail] = useState<ProcessedEmail | null>(null);
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [selectedEmail, setSelectedEmail] = useState(null);
 
   const { 
     data: emails = [], 
@@ -30,9 +16,9 @@ export default function Emails() {
   } = useEmails({
     query: searchQuery || undefined,
     priority: priorityFilter === "all" ? undefined : priorityFilter
-  }) as { data: ProcessedEmail[]; isLoading: boolean };
+  });
 
-  const handleEmailSelect = (email: ProcessedEmail) => {
+  const handleEmailSelect = (email) => {
     setSelectedEmail(email);
   };
 
@@ -67,7 +53,7 @@ export default function Emails() {
         />
         <select 
           value={priorityFilter} 
-          onChange={(e) => setPriorityFilter(e.target.value as "all" | "urgent" | "normal")}
+          onChange={(e) => setPriorityFilter(e.target.value)}
           className="px-3 py-2 border rounded-lg"
         >
           <option value="all">All Priorities</option>

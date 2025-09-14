@@ -7,45 +7,13 @@ import AIResponsePanel from "@/components/dashboard/ai-response-panel";
 import AnalyticsPanel from "@/components/dashboard/analytics-panel";
 import { useEmails } from "@/hooks/use-emails";
 import { useAnalytics } from "@/hooks/use-analytics";
-import type { IEmail } from "@shared/schema";
 import VideoPlayer from "@/components/dashboard/video-player";
 
-type ProcessedEmail = {
-  id: string;
-  sender: string;
-  subject: string;
-  body: string;
-  receivedAt: string;
-  priority: "urgent" | "normal";
-  sentiment: "positive" | "negative" | "neutral";
-  category?: string;
-  extractedInfo?: any;
-  hasResponse?: boolean;
-  generatedResponse?: string;
-};
-
-type EmailStats = {
-  totalEmails: number;
-  urgentEmails: number;
-  resolvedEmails: number;
-  pendingEmails: number;
-};
-
-type AnalyticsData = {
-  stats?: EmailStats;
-  sentiment?: {
-    positive: number;
-    negative: number;
-    neutral: number;
-  };
-  categories?: Array<{ category: string | null; count: number }>;
-};
-
 export default function Dashboard() {
-  const [selectedEmail, setSelectedEmail] = useState<ProcessedEmail | null>(null);
+  const [selectedEmail, setSelectedEmail] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [priorityFilter, setPriorityFilter] = useState<"all" | "urgent" | "normal">("all");
-  const [sentimentFilter, setSentimentFilter] = useState<"all" | "positive" | "negative" | "neutral">("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [sentimentFilter, setSentimentFilter] = useState("all");
 
   const { 
     data: emails = [], 
@@ -55,14 +23,14 @@ export default function Dashboard() {
     query: searchQuery || undefined,
     priority: priorityFilter === "all" ? undefined : priorityFilter,
     sentiment: sentimentFilter === "all" ? undefined : sentimentFilter
-  }) as { data: ProcessedEmail[]; isLoading: boolean; refetch: () => Promise<any> };
+  });
 
   const { 
     data: analytics,
     isLoading: analyticsLoading 
-  } = useAnalytics() as { data: AnalyticsData; isLoading: boolean };
+  } = useAnalytics();
 
-  const handleEmailSelect = (email: ProcessedEmail) => {
+  const handleEmailSelect = (email) => {
     setSelectedEmail(email);
   };
 
@@ -146,7 +114,7 @@ export default function Dashboard() {
 
         <section className="px-6 pb-6 fade-in" style={{animationDelay: '0.2s'}}>
           <StatsCards 
-            stats={analytics?.stats as EmailStats | undefined} 
+            stats={analytics?.stats} 
             isLoading={analyticsLoading} 
           />
         </section>
@@ -178,7 +146,7 @@ export default function Dashboard() {
                 onResponseSent={() => refetchEmails()}
               />
               <AnalyticsPanel 
-                analytics={analytics as { sentiment?: { positive: number; negative: number; neutral: number; }; categories?: Array<{ category: string; count: number; }>; }}
+                analytics={analytics}
                 isLoading={analyticsLoading}
               />
             </div>

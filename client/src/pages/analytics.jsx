@@ -4,26 +4,11 @@ import AnalyticsPanel from "@/components/dashboard/analytics-panel";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
-interface AnalyticsData {
-  stats?: {
-    totalEmails: number;
-    urgentEmails: number;
-    resolvedEmails: number;
-    pendingEmails: number;
-  };
-  sentiment?: {
-    positive: number;
-    negative: number;
-    neutral: number;
-  };
-  categories?: Array<{ category: string | null; count: number }>;
-}
-
 export default function Analytics() {
   const { 
     data: analytics,
     isLoading: analyticsLoading 
-  } = useAnalytics() as { data: AnalyticsData; isLoading: boolean };
+  } = useAnalytics();
 
   return (
     <div className="p-6 space-y-6">

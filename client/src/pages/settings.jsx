@@ -20,14 +20,14 @@ export default function Settings() {
     signature: "Best regards,\\nCustomer Support Team"
   });
 
-  const handleEmailSettingChange = (key: string, value: boolean) => {
+  const handleEmailSettingChange = (key, value) => {
     setEmailSettings(prev => ({
       ...prev,
       [key]: value
     }));
   };
 
-  const handleAccountSettingChange = (key: string, value: string) => {
+  const handleAccountSettingChange = (key, value) => {
     setAccountSettings(prev => ({
       ...prev,
       [key]: value

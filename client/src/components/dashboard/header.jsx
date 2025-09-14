@@ -1,10 +1,6 @@
 import { useState } from "react";
 
-interface HeaderProps {
-  onSyncEmails: () => void;
-}
-
-export default function Header({ onSyncEmails }: HeaderProps) {
+export default function Header({ onSyncEmails }) {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSync = async () => {

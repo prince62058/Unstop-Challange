@@ -7,34 +7,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type EmailWithResponses = {
-  id: string;
-  sender: string;
-  subject: string;
-  body: string;
-  hasResponse?: boolean;
-  responses?: Array<{
-    id: string;
-    generatedResponse: string;
-    confidence: number;
-    isEdited: boolean;
-    finalResponse?: string;
-    sentAt?: string;
-  }>;
-};
-
-interface AIResponsePanelProps {
-  selectedEmail?: {
-    id: string;
-    sender: string;
-    subject: string;
-    body: string;
-    hasResponse?: boolean;
-  } | null;
-  onResponseSent: () => void;
-}
-
-export default function AIResponsePanel({ selectedEmail, onResponseSent }: AIResponsePanelProps) {
+export default function AIResponsePanel({ selectedEmail, onResponseSent }) {
   const [editedResponse, setEditedResponse] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
@@ -46,10 +19,10 @@ export default function AIResponsePanel({ selectedEmail, onResponseSent }: AIRes
   } = useQuery({
     queryKey: [`/api/emails/${selectedEmail?.id}`],
     enabled: !!selectedEmail?.id,
-  }) as { data: EmailWithResponses | undefined; isLoading: boolean };
+  });
 
   const generateResponseMutation = useMutation({
-    mutationFn: async (emailId: string) => {
+    mutationFn: async (emailId) => {
       const response = await apiRequest("POST", `/api/emails/${emailId}/generate-response`);
       return response.json();
     },
@@ -72,7 +45,7 @@ export default function AIResponsePanel({ selectedEmail, onResponseSent }: AIRes
   });
 
   const sendResponseMutation = useMutation({
-    mutationFn: async ({ emailId, response }: { emailId: string; response: string }) => {
+    mutationFn: async ({ emailId, response }) => {
       const res = await apiRequest("POST", `/api/emails/${emailId}/send-response`, { response });
       return res.json();
     },
@@ -95,9 +68,8 @@ export default function AIResponsePanel({ selectedEmail, onResponseSent }: AIRes
   });
 
   useEffect(() => {
-    const details = emailDetails as EmailWithResponses | undefined;
-    if (details?.responses?.[0]?.generatedResponse) {
-      setEditedResponse(details.responses[0].generatedResponse);
+    if (emailDetails?.responses?.[0]?.generatedResponse) {
+      setEditedResponse(emailDetails.responses[0].generatedResponse);
     } else {
       setEditedResponse("");
     }
@@ -136,7 +108,7 @@ export default function AIResponsePanel({ selectedEmail, onResponseSent }: AIRes
     );
   }
 
-  const existingResponse = (emailDetails as EmailWithResponses | undefined)?.responses?.[0];
+  const existingResponse = emailDetails?.responses?.[0];
   const hasGeneratedResponse = !!existingResponse?.generatedResponse;
 
   return (

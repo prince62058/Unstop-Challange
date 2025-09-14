@@ -3,20 +3,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EmailCard from "./email-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Email } from "@shared/schema";
-
-interface EmailListProps {
-  emails: any[];
-  isLoading: boolean;
-  onEmailSelect: (email: any) => void;
-  selectedEmailId?: string;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  priorityFilter: "all" | "urgent" | "normal";
-  onPriorityFilterChange: (priority: "all" | "urgent" | "normal") => void;
-  sentimentFilter: "all" | "positive" | "negative" | "neutral";
-  onSentimentFilterChange: (sentiment: "all" | "positive" | "negative" | "neutral") => void;
-}
 
 export default function EmailList({
   emails,
@@ -29,7 +15,7 @@ export default function EmailList({
   onPriorityFilterChange,
   sentimentFilter,
   onSentimentFilterChange
-}: EmailListProps) {
+}) {
   return (
     <div className="space-y-6" data-testid="email-list">
       <Card>
@@ -39,7 +25,7 @@ export default function EmailList({
             <div className="flex items-center gap-2">
               <Select 
                 value={priorityFilter} 
-                onValueChange={(value: "all" | "urgent" | "normal") => onPriorityFilterChange(value)}
+                onValueChange={(value) => onPriorityFilterChange(value)}
               >
                 <SelectTrigger className="w-40" data-testid="select-priority-filter">
                   <SelectValue placeholder="All Priorities" />
@@ -53,7 +39,7 @@ export default function EmailList({
               
               <Select 
                 value={sentimentFilter} 
-                onValueChange={(value: "all" | "positive" | "negative" | "neutral") => onSentimentFilterChange(value)}
+                onValueChange={(value) => onSentimentFilterChange(value)}
               >
                 <SelectTrigger className="w-40" data-testid="select-sentiment-filter">
                   <SelectValue placeholder="All Sentiments" />

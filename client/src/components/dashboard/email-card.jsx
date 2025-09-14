@@ -4,30 +4,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-interface EmailCardProps {
-  email: {
-    id: string;
-    sender: string;
-    subject: string;
-    body: string;
-    receivedAt: string;
-    priority: "urgent" | "normal";
-    sentiment: "positive" | "negative" | "neutral";
-    category?: string;
-    extractedInfo?: any;
-    hasResponse?: boolean;
-    generatedResponse?: string;
-  };
-  isSelected: boolean;
-  onClick: () => void;
-}
-
-export default function EmailCard({ email, isSelected, onClick }: EmailCardProps) {
+export default function EmailCard({ email, isSelected, onClick }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const generateResponseMutation = useMutation({
-    mutationFn: async (emailId: string) => {
+    mutationFn: async (emailId) => {
       const response = await apiRequest("POST", `/api/emails/${emailId}/generate-response`);
       return response.json();
     },
@@ -48,12 +30,12 @@ export default function EmailCard({ email, isSelected, onClick }: EmailCardProps
     },
   });
 
-  const handleGenerateResponse = (e: React.MouseEvent) => {
+  const handleGenerateResponse = (e) => {
     e.stopPropagation();
     generateResponseMutation.mutate(email.id);
   };
 
-  const getSenderInitials = (sender: string) => {
+  const getSenderInitials = (sender) => {
     const name = sender.split("@")[0];
     return name
       .split(".")
@@ -62,14 +44,14 @@ export default function EmailCard({ email, isSelected, onClick }: EmailCardProps
       .slice(0, 2);
   };
 
-  const getPriorityBadgeClass = (priority: string) => {
+  const getPriorityBadgeClass = (priority) => {
     if (priority === "urgent") {
       return "bg-gradient-to-r from-red-500 to-red-600 text-white border-red-300";
     }
     return "bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-yellow-300";
   };
 
-  const getSentimentBadgeClass = (sentiment: string) => {
+  const getSentimentBadgeClass = (sentiment) => {
     if (sentiment === "positive") {
       return "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-300";
     }
@@ -79,7 +61,7 @@ export default function EmailCard({ email, isSelected, onClick }: EmailCardProps
     return "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-gray-300";
   };
 
-  const extractPhoneNumbers = (extractedInfo: any) => {
+  const extractPhoneNumbers = (extractedInfo) => {
     return extractedInfo?.phoneNumbers?.[0] || "";
   };
 
