@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes.js";
 import { setupVite, serveStatic, log } from "./vite";
-import { connectDB } from "./db.js";
+import { db } from "./db.js";
 
 const app = express();
 app.use(express.json());
@@ -38,7 +38,8 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  await connectDB();
+  // Database is already connected via db.js
+  console.log("PostgreSQL database connected via Drizzle ORM");
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

@@ -1,5 +1,5 @@
 import { createServer } from "http";
-import { storage } from "./storage.js";
+import { storage } from "./storage.ts";
 import { emailService } from "./services/email.js";
 import { z } from "zod";
 
