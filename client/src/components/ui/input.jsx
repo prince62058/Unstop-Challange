@@ -12,6 +12,6 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
       {...props}
     />
   )
-})</div>
+})
 Input.displayName = "Input"
 export { Input }
