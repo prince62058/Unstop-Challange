@@ -1,6 +1,4 @@
-import { db } from "./db";
-import { users, emails, emailResponses, type User, type InsertUser, type Email, type InsertEmail, type EmailResponse, type InsertEmailResponse } from "@shared/schema";
-import { eq, desc, ilike, or, count, sql } from "drizzle-orm";
+import { type User, type InsertUser, type Email, type InsertEmail, type EmailResponse, type InsertEmailResponse } from "@shared/schema";
 import bcrypt from "bcrypt";
 
 /**
@@ -25,10 +23,28 @@ import bcrypt from "bcrypt";
  */
 
 export class DatabaseStorage {
-  private mockResponses: Map<string, EmailResponse>;
+  private users: Map<number, User> = new Map();
+  private emails: Map<number, Email> = new Map();
+  private responses: Map<number, EmailResponse> = new Map();
+  private nextUserId: number = 1;
+  private nextEmailId: number = 1;
+  private nextResponseId: number = 1;
 
   constructor() {
-    this.mockResponses = new Map();
+    // Initialize with sample data
+    this.initializeSampleData();
+  }
+
+  /**
+   * Initialize sample data for development
+   */
+  private initializeSampleData(): void {
+    const sampleEmails = this.getSampleEmails();
+    sampleEmails.forEach((email, index) => {
+      const emailId = index + 1;
+      this.emails.set(emailId, { ...email, id: emailId });
+      this.nextEmailId = Math.max(this.nextEmailId, emailId + 1);
+    });
   }
 
   /**
@@ -37,13 +53,7 @@ export class DatabaseStorage {
    * @returns {Promise<User|undefined>}
    */
   async getUser(id: number): Promise<User | undefined> {
-    try {
-      const [user] = await db.select().from(users).where(eq(users.id, id));
-      return user || undefined;
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      return undefined;
-    }
+    return this.users.get(id);
   }
 
   /**
@@ -52,13 +62,12 @@ export class DatabaseStorage {
    * @returns {Promise<User|undefined>}
    */
   async getUserByUsername(username: string): Promise<User | undefined> {
-    try {
-      const [user] = await db.select().from(users).where(eq(users.username, username));
-      return user || undefined;
-    } catch (error) {
-      console.error('Error fetching user by username:', error);
-      return undefined;
+    for (const user of Array.from(this.users.values())) {
+      if (user.username === username) {
+        return user;
+      }
     }
+    return undefined;
   }
 
   /**
@@ -71,7 +80,14 @@ export class DatabaseStorage {
     if (insertUser.password) {
       insertUser.password = await bcrypt.hash(insertUser.password, 10);
     }
-    const [user] = await db.insert(users).values(insertUser).returning();
+    const user: User = {
+      id: this.nextUserId++,
+      username: insertUser.username,
+      password: insertUser.password,
+      emailAddress: insertUser.emailAddress || null,
+      createdAt: new Date()
+    };
+    this.users.set(user.id, user);
     return user;
   }
 
@@ -82,17 +98,9 @@ export class DatabaseStorage {
    * @returns {Promise<Email[]>}
    */
   async getEmails(limit = 50, offset = 0): Promise<Email[]> {
-    try {
-      const emailList = await db.select()
-        .from(emails)
-        .orderBy(desc(emails.receivedAt))
-        .limit(limit)
-        .offset(offset);
-      return emailList;
-    } catch (error) {
-      console.log('Database unavailable, returning sample data');
-      return this.getSampleEmails().slice(offset, offset + limit);
-    }
+    const allEmails = Array.from(this.emails.values())
+      .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
+    return allEmails.slice(offset, offset + limit);
   }
 
   /**
@@ -101,13 +109,7 @@ export class DatabaseStorage {
    * @returns {Promise<Email|undefined>}
    */
   async getEmailById(id: string): Promise<Email | undefined> {
-    try {
-      const [email] = await db.select().from(emails).where(eq(emails.id, parseInt(id)));
-      return email || undefined;
-    } catch (error) {
-      console.log('Database unavailable, searching sample data');
-      return this.getSampleEmails().find(email => email.id?.toString() === id);
-    }
+    return this.emails.get(parseInt(id));
   }
 
   /**
@@ -116,17 +118,21 @@ export class DatabaseStorage {
    * @returns {Promise<Email>}
    */
   async createEmail(emailData: InsertEmail): Promise<Email> {
-    try {
-      const [email] = await db.insert(emails).values(emailData).returning();
-      return email;
-    } catch (error) {
-      console.log('Database unavailable, creating mock email');
-      return {
-        id: Date.now(),
-        ...emailData,
-        createdAt: new Date()
-      } as Email;
-    }
+    const email: Email = {
+      id: this.nextEmailId++,
+      sender: emailData.sender,
+      subject: emailData.subject,
+      body: emailData.body,
+      receivedAt: emailData.receivedAt,
+      priority: emailData.priority,
+      sentiment: emailData.sentiment,
+      category: emailData.category || null,
+      extractedInfo: emailData.extractedInfo || null,
+      isProcessed: emailData.isProcessed || false,
+      createdAt: new Date()
+    };
+    this.emails.set(email.id, email);
+    return email;
   }
 
   /**
@@ -136,25 +142,16 @@ export class DatabaseStorage {
    * @returns {Promise<Email>}
    */
   async updateEmail(id: string, updates: Partial<Email>): Promise<Email> {
-    try {
-      const [updatedEmail] = await db.update(emails)
-        .set(updates)
-        .where(eq(emails.id, parseInt(id)))
-        .returning();
-      
-      if (!updatedEmail) {
-        throw new Error(`Email with id ${id} not found`);
-      }
-      
-      return updatedEmail;
-    } catch (error) {
-      console.log('Database unavailable, returning mock updated email');
-      const existingEmail = this.getSampleEmails().find(e => e.id?.toString() === id);
-      if (!existingEmail) {
-        throw new Error(`Email with id ${id} not found`);
-      }
-      return { ...existingEmail, ...updates } as Email;
+    const emailId = parseInt(id);
+    const existingEmail = this.emails.get(emailId);
+    
+    if (!existingEmail) {
+      throw new Error(`Email with id ${id} not found`);
     }
+    
+    const updatedEmail = { ...existingEmail, ...updates };
+    this.emails.set(emailId, updatedEmail);
+    return updatedEmail;
   }
 
   /**
@@ -163,15 +160,9 @@ export class DatabaseStorage {
    * @returns {Promise<Email[]>}
    */
   async getEmailsByPriority(priority: "urgent" | "normal"): Promise<Email[]> {
-    try {
-      return await db.select()
-        .from(emails)
-        .where(eq(emails.priority, priority))
-        .orderBy(desc(emails.receivedAt));
-    } catch (error) {
-      console.log('Database unavailable, filtering sample data');
-      return this.getSampleEmails().filter(email => email.priority === priority);
-    }
+    return Array.from(this.emails.values())
+      .filter(email => email.priority === priority)
+      .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
   }
 
   /**
@@ -180,15 +171,9 @@ export class DatabaseStorage {
    * @returns {Promise<Email[]>}
    */
   async getEmailsBySentiment(sentiment: "positive" | "negative" | "neutral"): Promise<Email[]> {
-    try {
-      return await db.select()
-        .from(emails)
-        .where(eq(emails.sentiment, sentiment))
-        .orderBy(desc(emails.receivedAt));
-    } catch (error) {
-      console.log('Database unavailable, filtering sample data');
-      return this.getSampleEmails().filter(email => email.sentiment === sentiment);
-    }
+    return Array.from(this.emails.values())
+      .filter(email => email.sentiment === sentiment)
+      .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
   }
 
   /**
@@ -197,24 +182,14 @@ export class DatabaseStorage {
    * @returns {Promise<Email[]>}
    */
   async searchEmails(query: string): Promise<Email[]> {
-    try {
-      return await db.select()
-        .from(emails)
-        .where(or(
-          ilike(emails.subject, `%${query}%`),
-          ilike(emails.body, `%${query}%`),
-          ilike(emails.sender, `%${query}%`)
-        ))
-        .orderBy(desc(emails.receivedAt));
-    } catch (error) {
-      console.log('Database unavailable, searching sample data');
-      const lowerQuery = query.toLowerCase();
-      return this.getSampleEmails().filter(email => 
+    const lowerQuery = query.toLowerCase();
+    return Array.from(this.emails.values())
+      .filter(email => 
         email.subject.toLowerCase().includes(lowerQuery) ||
         email.body.toLowerCase().includes(lowerQuery) ||
         email.sender.toLowerCase().includes(lowerQuery)
-      );
-    }
+      )
+      .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
   }
 
   /**
@@ -223,20 +198,9 @@ export class DatabaseStorage {
    * @returns {Promise<EmailResponse[]>}
    */
   async getResponsesByEmailId(emailId: string): Promise<EmailResponse[]> {
-    try {
-      const responses = await db.select()
-        .from(emailResponses)
-        .where(eq(emailResponses.emailId, parseInt(emailId)))
-        .orderBy(desc(emailResponses.createdAt));
-      return responses;
-    } catch (error) {
-      console.log('Database unavailable for responses, checking mock storage');
-      if (this.mockResponses && this.mockResponses.has(emailId)) {
-        const mockResponse = this.mockResponses.get(emailId);
-        return mockResponse ? [mockResponse] : [];
-      }
-      return [];
-    }
+    return Array.from(this.responses.values())
+      .filter(response => response.emailId === parseInt(emailId))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
   /**
@@ -245,25 +209,19 @@ export class DatabaseStorage {
    * @returns {Promise<EmailResponse>}
    */
   async createEmailResponse(responseData: InsertEmailResponse): Promise<EmailResponse> {
-    try {
-      const [response] = await db.insert(emailResponses).values(responseData).returning();
-      console.log(`Email response saved to database: ${responseData.emailId}`);
-      return response;
-    } catch (error) {
-      console.log('Database unavailable, creating mock response');
-      const mockResponse = {
-        id: Date.now(),
-        ...responseData,
-        createdAt: new Date()
-      } as EmailResponse;
-      
-      if (!this.mockResponses) {
-        this.mockResponses = new Map();
-      }
-      this.mockResponses.set(responseData.emailId?.toString() || '', mockResponse);
-      console.log(`Mock response created for email ${responseData.emailId}`);
-      return mockResponse;
-    }
+    const response: EmailResponse = {
+      id: this.nextResponseId++,
+      emailId: responseData.emailId,
+      generatedResponse: responseData.generatedResponse,
+      isEdited: responseData.isEdited || false,
+      finalResponse: responseData.finalResponse || null,
+      sentAt: responseData.sentAt || null,
+      confidence: responseData.confidence || null,
+      createdAt: new Date()
+    };
+    this.responses.set(response.id, response);
+    console.log(`Email response saved to memory storage: ${responseData.emailId}`);
+    return response;
   }
 
   /**
@@ -273,25 +231,16 @@ export class DatabaseStorage {
    * @returns {Promise<EmailResponse>}
    */
   async updateEmailResponse(id: string, updates: Partial<EmailResponse>): Promise<EmailResponse> {
-    try {
-      const [updatedResponse] = await db.update(emailResponses)
-        .set(updates)
-        .where(eq(emailResponses.id, parseInt(id)))
-        .returning();
-      
-      if (!updatedResponse) {
-        throw new Error(`EmailResponse with id ${id} not found`);
-      }
-      
-      return updatedResponse;
-    } catch (error) {
-      console.log('Database unavailable, returning mock updated response');
-      return {
-        id: parseInt(id),
-        ...updates,
-        createdAt: new Date()
-      } as EmailResponse;
+    const responseId = parseInt(id);
+    const existingResponse = this.responses.get(responseId);
+    
+    if (!existingResponse) {
+      throw new Error(`EmailResponse with id ${id} not found`);
     }
+    
+    const updatedResponse = { ...existingResponse, ...updates };
+    this.responses.set(responseId, updatedResponse);
+    return updatedResponse;
   }
 
   /**
@@ -299,41 +248,22 @@ export class DatabaseStorage {
    * @returns {Promise<{totalEmails: number, urgentEmails: number, resolvedEmails: number, pendingEmails: number}>}
    */
   async getEmailStats() {
-    try {
-      const [totalResult] = await db.select({ count: count() }).from(emails);
-      const [urgentResult] = await db.select({ count: count() })
-        .from(emails)
-        .where(eq(emails.priority, 'urgent'));
-      
-      // Count resolved emails (those with sent responses)
-      const resolvedResult = await db.select({ count: count() })
-        .from(emailResponses)
-        .where(sql`sent_at IS NOT NULL`);
-      const resolvedEmails = resolvedResult[0]?.count || 0;
-      
-      const totalEmails = totalResult?.count || 0;
-      const urgentEmails = urgentResult?.count || 0;
-      const pendingEmails = totalEmails - resolvedEmails;
+    const allEmails = Array.from(this.emails.values());
+    const urgentEmails = allEmails.filter(e => e.priority === 'urgent').length;
+    
+    // Count resolved emails (those with sent responses)
+    const resolvedEmails = Array.from(this.responses.values())
+      .filter(response => response.sentAt !== null && response.sentAt !== undefined).length;
+    
+    const totalEmails = allEmails.length;
+    const pendingEmails = totalEmails - resolvedEmails;
 
-      return {
-        totalEmails,
-        urgentEmails,
-        resolvedEmails,
-        pendingEmails
-      };
-    } catch (error) {
-      console.log('Database unavailable, returning sample stats');
-      const sampleEmails = this.getSampleEmails();
-      const urgentCount = sampleEmails.filter(e => e.priority === 'urgent').length;
-      const resolvedCount = Math.floor(sampleEmails.length * 0.6);
-      
-      return {
-        totalEmails: sampleEmails.length,
-        urgentEmails: urgentCount,
-        resolvedEmails: resolvedCount,
-        pendingEmails: sampleEmails.length - resolvedCount
-      };
-    }
+    return {
+      totalEmails,
+      urgentEmails,
+      resolvedEmails,
+      pendingEmails
+    };
   }
 
   /**
@@ -341,35 +271,26 @@ export class DatabaseStorage {
    * @returns {Promise<{positive: number, negative: number, neutral: number}>}
    */
   async getSentimentDistribution() {
-    try {
-      const results = await db.select({
-        sentiment: emails.sentiment,
-        count: count()
-      })
-      .from(emails)
-      .groupBy(emails.sentiment);
-
-      const distribution = { positive: 0, negative: 0, neutral: 0 };
-      const total = results.reduce((sum, item) => sum + item.count, 0);
-
-      if (total > 0) {
-        results.forEach(item => {
-          const percentage = Math.round((item.count / total) * 100);
-          if (item.sentiment === 'positive') distribution.positive = percentage;
-          else if (item.sentiment === 'negative') distribution.negative = percentage;
-          else if (item.sentiment === 'neutral') distribution.neutral = percentage;
-        });
-      }
-
-      return distribution;
-    } catch (error) {
-      console.log('Database unavailable, returning sample sentiment data');
-      return {
-        positive: 45,
-        negative: 25,
-        neutral: 30
-      };
+    const allEmails = Array.from(this.emails.values());
+    const total = allEmails.length;
+    
+    if (total === 0) {
+      return { positive: 0, negative: 0, neutral: 0 };
     }
+
+    const sentimentCounts = { positive: 0, negative: 0, neutral: 0 };
+    
+    allEmails.forEach(email => {
+      if (email.sentiment in sentimentCounts) {
+        sentimentCounts[email.sentiment]++;
+      }
+    });
+
+    return {
+      positive: Math.round((sentimentCounts.positive / total) * 100),
+      negative: Math.round((sentimentCounts.negative / total) * 100),
+      neutral: Math.round((sentimentCounts.neutral / total) * 100)
+    };
   }
 
   /**
@@ -377,30 +298,19 @@ export class DatabaseStorage {
    * @returns {Promise<{category: string|null, count: number}[]>}
    */
   async getCategoryBreakdown() {
-    try {
-      const results = await db.select({
-        category: emails.category,
-        count: count()
-      })
-      .from(emails)
-      .where(sql`category IS NOT NULL`)
-      .groupBy(emails.category)
-      .orderBy(desc(count()));
+    const allEmails = Array.from(this.emails.values());
+    const categoryMap = new Map<string, number>();
+    
+    allEmails.forEach(email => {
+      if (email.category && email.category !== null) {
+        const count = categoryMap.get(email.category) || 0;
+        categoryMap.set(email.category, count + 1);
+      }
+    });
 
-      return results.map(result => ({
-        category: result.category,
-        count: result.count
-      }));
-    } catch (error) {
-      console.log('Database unavailable, returning sample category data');
-      return [
-        { category: 'Technical Issue', count: 12 },
-        { category: 'Customer Feedback', count: 8 },
-        { category: 'Business Development', count: 6 },
-        { category: 'Financial', count: 4 },
-        { category: 'HR/Internal', count: 3 }
-      ];
-    }
+    return Array.from(categoryMap.entries())
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count);
   }
 
   // Sample data for demo purposes
